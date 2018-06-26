@@ -1,0 +1,17 @@
+{
+  "name": "email_routing_official",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "dependencies": {
+    "aws-sdk": "2.263.1",
+    "axios": "0.18.0",
+    "mailparser": "2.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
