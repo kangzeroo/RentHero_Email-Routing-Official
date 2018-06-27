@@ -4,6 +4,7 @@ const s3API = require('../s3/s3_api')
 const dynAPI = require('../dyn/dyn_api')
 const extractionAPI = require('../extraction/extractionAPI')
 
+// lead to agent
 module.exports.fn = function(rel, email, toAddress, fromAddress) {
   const p = new Promise((res, rej) => {
     console.log(`------ LEAD INQUIRY ------`)
@@ -17,17 +18,17 @@ module.exports.fn = function(rel, email, toAddress, fromAddress) {
               .then((s3Email) => {
                 return extractionAPI.extractEmail(s3Email)
               })
-              .then((parsedEmail) => {
-                formattedEmail = parsedEmail
-                return sesAPI.forwardToAI(relationship, formattedEmail, toAddress)
+              .then((extractedEmail) => {
+                formattedEmail = extractedEmail
+                return sesAPI.forwardToAI(relationship, formattedEmail, toAddress, email.messageId)
               })
               .then((status) => {
-                return dynAPI.saveMessage(
-                  status.MessageId,      // sesFwdEmailID
+                return dynAPI.saveEmailReferences(
+                  status.MessageId,                       // sesFwdEmailID
                   email.messageId,                        // originalEmailID
-                  email.timestamp,                        // originalEmailReceivedTime
-                  `https://s3.amazonaws.com/${process.env.S3_BUCKET}/emails/${email.messageId}`, // s3FileURL
-                  `emails/${email.messageId}`             // s3FileKeyname
+                  extractionAPI.extractReplyToID(formattedEmail),                         // repliedEmailID
+                  fromAddress,                            // senderEmail
+                  email.timestamp                        // originalEmailReceivedTime
                 )
               })
               .then((data) => {

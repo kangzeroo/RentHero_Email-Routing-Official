@@ -7,29 +7,33 @@ const extractionAPI = require('../extraction/extractionAPI')
 module.exports.fn = function(rel, email, toAddress, fromAddress) {
   const p = new Promise((res, rej) => {
     console.log('========> AI replying...')
+    let formattedEmail
     s3API.grabEmail(process.env.S3_BUCKET, `emails/${email.messageId}`)
               .then((s3Email) => {
                 return extractionAPI.extractEmail(s3Email)
               })
-              .then((data) => {
-                return dynAPI.getMessage('PREVIOUS_MESSAGE_ID___grab_from_field:inReplyTo')
+              .then((extractedEmail) => {
+                formattedEmail = extractedEmail
+                return dynAPI.getEmailReference(formattedEmail)
               })
-              .then((data) => {
-                return sesAPI.forwardToLead(relationship, email)
+              .then((email_ref) => {
+                return sesAPI.forwardToLead(email_ref, formattedEmail, toAddress)
               })
-              .then((data) => {
-                return dynAPI.saveMessage(
-                  // sesFwdEmailID
-                  // originalEmailID
-                  // originalEmailReceivedTime
-                  // s3FileURL
-                  // s3FileKeyname
+              .then((status) => {
+                return dynAPI.saveEmailReferences(
+                  status.MessageId,                       // sesFwdEmailID
+                  email.messageId,                        // originalEmailID
+                  extractionAPI.extractReplyToID(formattedEmail),                         // repliedEmailID
+                  fromAddress,                            // senderEmail
+                  email.timestamp                        // originalEmailReceivedTime
                 )
               })
               .then((data) => {
+                console.log(`------ FINISHED SAVING THE DYN REFERENCE ------`)
                 res(data)
               })
               .catch((err) => {
+                console.log(`------ FAILED SOMEWHERE ALONG THE WAY (agent_to_lead.js) ------`)
                 rej(err)
               })
   })
