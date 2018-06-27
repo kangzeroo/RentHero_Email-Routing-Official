@@ -18,3 +18,28 @@ module.exports.extractEmail = function(S3Email){
   })
   return p
 }
+
+module.exports.extractReplyToID = function(formattedEmail){
+  console.log(`------ EXTRACTING THE REPLY TO EMAIL IDS ------`)
+  console.log(formattedEmail.references)
+  if (typeof formattedEmail.references === 'object') {
+    const references = formattedEmail.references.filter((ref) => {
+      return ref.indexOf('@email.amazonses.com') > 1
+    })
+    if (references && references[0]) {
+      return references[0].slice(
+        1,
+        references[0].indexOf('@')
+      )
+    } else {
+      return 'none'
+    }
+  } else if (typeof formattedEmail.references === 'string') {
+    return formattedEmail.references.slice(
+      1,
+      formattedEmail.references.indexOf('@')
+    )
+  } else {
+    return 'none'
+  }
+}
