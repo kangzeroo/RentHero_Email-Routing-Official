@@ -9,7 +9,10 @@
     "mailparser": "2.2.0",
     "moment": "2.22.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "4.0.0",
+    "eslint-plugin-node": "5.0.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
