@@ -25,3 +25,14 @@ module.exports.saveKnowledgeHistory = function() {
   })
   return p
 }
+
+// [TODO]: Implement below function
+module.exports.collectKnowledgeHistory = function() {
+  const p = new Promise((res, rej) => {
+    res({
+      title: 'collectKnowledgeHistory',
+      history: []
+    })
+  })
+  return p
+}
