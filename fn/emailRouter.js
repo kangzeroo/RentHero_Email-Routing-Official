@@ -30,8 +30,8 @@ module.exports = function(event, context, callback){
             - Eg. Should we send the message to the landlord for review, or should we directly reply and simply CC the landlord? Or maybe we can go full-auto and directly reply with CCing
             - `meta.supervisionSettings = {
                                             ad_id: 'unknown' || 'open_to_suggestions' || '<AD_ID>',
-                                            type: 'review' || 'cc' || 'full_auto',
-                                            emails: [emailA, emailB]
+                                            reviewer_emails: [emailA, emailB],
+                                            cc_emails: [emailA, emailB]
                                           }`
       7. Extract all the participants to this email and note their original email. Save those original emails and exchange them for alias emails (create a new alias if not already existing)
             - `meta.participants = participants` --> extracted from `extractionAPI.extractParticipants(sesEmail)`
@@ -157,7 +157,7 @@ module.exports = function(event, context, callback){
                                               console.log('------ GOT LATEST CUSTOM META DATA ABOUT EMAIL ------')
                                               meta.fromKnownLandlord = results[0].known
                                               meta.emailClient = results[1]
-                                              meta.leadChannel = results[2].channel_name
+                                              meta.leadChannel = results[2].channel.channel_name
                                               meta.targetAd = results[3].ad_id
                                               meta.supervisionSettings = results[3].supervision_settings
                                               console.log(meta)
