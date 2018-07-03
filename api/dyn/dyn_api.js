@@ -1,7 +1,7 @@
 const axios = require('axios')
 const DYN_MS = require('../API_URLS').DYN_MS
 const moment = require('moment')
-const extractionAPI = require('../extraction/extractionAPI')
+const extractionAPI = require('../extraction/extraction_api')
 
 module.exports.saveEmailReferences = function(sesFwdEmailID, originalEmailID, repliedEmailID, senderEmail, originalEmailReceivedTime){
   console.log(`------ SAVING MESSAGE REFERENCE TO DYNAMODB ------`)
@@ -47,7 +47,7 @@ module.exports.saveEmailReferences = function(sesFwdEmailID, originalEmailID, re
   return p
 }
 
-module.exports.getEmailReference = function(formattedEmail) {
+module.exports.getEmailReference = function(formattedEmail, sender_email) {
   console.log(`------ ABOUT TO GET EMAIL REFERENCE FROM DYN ------`)
   const email_id = extractionAPI.extractReplyToID(formattedEmail)
   console.log(email_id)
@@ -57,7 +57,7 @@ module.exports.getEmailReference = function(formattedEmail) {
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${DYN_MS}/getEmailReference`, { email_id: email_id }, headers)
+    axios.post(`${DYN_MS}/getEmailReference`, { email_id: email_id, sender_email: sender_email }, headers)
       .then((data) => {
         console.log(`------ Successful POST/getEmailReference ------`)
         console.log(data.data)

@@ -2,7 +2,7 @@ const rdsAPI = require('../rds/rds_api')
 const sesAPI = require('../ses/ses_api')
 const s3API = require('../s3/s3_api')
 const dynAPI = require('../dyn/dyn_api')
-const extractionAPI = require('../extraction/extractionAPI')
+const extractionAPI = require('../extraction/extraction_api')
 
 // lead to agent
 module.exports.fn = function(rel, email, toAddress, fromAddress) {

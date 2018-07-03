@@ -1,0 +1,207 @@
+Return-Path: <admin@renthero.com>
+Received: from mail-lf0-f43.google.com (mail-lf0-f43.google.com [209.85.215.43])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id efviq64gurpom34vtosiukn66b9ommjhpb358qg1
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:42:19 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: none (spfCheck: 209.85.215.43 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.215.43; envelope-from=admin@renthero.com; helo=mail-lf0-f43.google.com;
+Authentication-Results: amazonses.com;
+ spf=none (spfCheck: 209.85.215.43 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.215.43; envelope-from=admin@renthero.com; helo=mail-lf0-f43.google.com;
+ dkim=pass header.i=@renthero-com.20150623.gappssmtp.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFIcHBhTUVOclBWb29lVzZUcHFwV3MzNDlybS9iNTZ1TllWcGVVdVZKanJ5YmFkdGs3UnVEZWFFbHpVSmwrdDNOTWRPN2h1c3cxYWNNczVoTVpjdnBTZ0lhSWYzMndFWFdOYWxGUGFINnNvRktGdzcwWkVXRDRnMktsOW9vRUduSlpLQkZJOGF2WU1ZeTI4aDZvaUZTYWMzektWVTBFTnFoRkdEWnBMNDlqNVlxWFAyTSt6R1A0WWZMWTUyeXRYNWJIVUIrZ2l3Wm1FTTBzRHhOcHdqTlU2WGdDT0VGYmZ2ZlFBcHNnV2Rkd0VTNUpHeXpVeTdQQkFPQ1hUZjdVdTRRUVpQV3JnbGI0aTY1UFUvcGt0SXNPckI0dWVRV0g3L3dwRnliVitvREx2WGc9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=NJAmnF/gaoJzn5jvJBohl4ttNMgKPKAEZpPwY6kJWfBqUL/NbXtPvKH6OcoqsFTDtbSIyBdUQ+9yEH+9j2bUK1aDoG4S0BaLhx6K7/hrS8XqX9E0xkKRgIgQm9ZdO9gQ3tEdnzHFaZ0TdLKjkUXFnClo+SQ3Mveu5wtef1gCQms=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530600140; v=1; bh=UvqgpUrZBJu8FHGeZBaB1SzDauudu7ildncRrZ9ouWo=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+Received: by mail-lf0-f43.google.com with SMTP id m13-v6so652042lfb.12
+        for <heffe@myrenthelper.com>; Mon, 02 Jul 2018 23:42:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=renthero-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc;
+        bh=C2wL+V+O8hGmYin2GHdA+6sPYtB3WjEh0FwOyPZJsyk=;
+        b=xa8CReC7w/1DhlKaicy5lxpSL7CZGf0wPIEjlAoEsZeV9d/Q4tH8lrMLLKqEQM8tgZ
+         lc8I2iliE/09i4rOhmya7jp4Oh9RCYCqVgtXa8Nol8YlVdInZ/0DNcIucxz1HbfNCXdQ
+         0VqNrkcFBZykjj3y+pa4pSheQQ5uVOfbQ0nF16HrY8FeFfyAQ2n1EfW2sl4y5IyVrMJv
+         fXA98HFlOtoyJ3DYdXfmJFhCWLrUORQhuX9Z34T5U9nrajaSuBRw9giu9y7wplt7dwtc
+         mYy86V+lKDlFqrLwz4eVOzmPVfVeXp8rGH3IaQTO1+cEDM1X9scB7pIVePoSHJnd2aKn
+         +UCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+         :message-id:subject:to:cc;
+        bh=C2wL+V+O8hGmYin2GHdA+6sPYtB3WjEh0FwOyPZJsyk=;
+        b=RrTGx9/Wiy3IcAl2kpYnjnsv57HyZpfePFByt688OSOhJrkyio4UdXfUrSzO7G3tzx
+         Szp8qhzHQ5vj9TZQyrbLUmxIXj9VRAXK5EHioug7389/5AASrm21+AZj75D0n4e3G/gJ
+         EzrW2zK1sLBwGq2bzAaWwZYVTcHn/UmzMoSOMKg/PajBvm5CDy1OnjdT1BaIeEjk2iCx
+         zhYUvxf3v7rHp8amCyvw+AIzMoYLZy7m93DH0HQdIaDrjMhAdU2WZ58v+2qXSE11saqz
+         ArToGZlOWsn2VHdCGaJc2Km2nmicprxriTUJ8EcMf7CZ6NLWj9GvUQJFxw6IkBEUzpsI
+         TMKw==
+X-Gm-Message-State: APt69E1N4F+i2Q840cFqhShwd+mfaklu+4GKmMPB9NPiZkz9P+d7gCRi
+	1/c4nRKHv3btuQfEbCi3TWZ4EGsW4JHBxc9XtXnlzgaZ
+X-Google-Smtp-Source: AAOMgpfu8Xh6datW8Yg6OFhOu6T2TvdcE7vuWWcMnqE6pQoY0ywCrKtoau6NUVfymOECLkhalkvyBRdHTcT5kY8flkc=
+X-Received: by 2002:a19:1003:: with SMTP id f3-v6mr19477567lfi.116.1530600137931;
+ Mon, 02 Jul 2018 23:42:17 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 2002:ab3:408a:0:0:0:0:0 with HTTP; Mon, 2 Jul 2018 23:42:17 -0700 (PDT)
+X-Originating-IP: [208.72.125.2]
+In-Reply-To: <k5pxXXn-TMqhW4EgiH4wYQ@ismtpd0008p1sjc2.sendgrid.net>
+References: <k5pxXXn-TMqhW4EgiH4wYQ@ismtpd0008p1sjc2.sendgrid.net>
+From: RentHero Admin <admin@renthero.com>
+Date: Tue, 3 Jul 2018 02:42:17 -0400
+Message-ID: <CAHSKJ1jGgGZ7beDK1SYUU2iquXc4CmEcsEqBUBRzjb=4Fy_eKg@mail.gmail.com>
+Subject: Fwd: This doesn't have to be a goodbye
+To: heffe@myrenthelper.com, Jimmy Guo <jimmy@renthero.com>
+Cc: Kangze Huang <kangze@renthero.com>
+Content-Type: multipart/alternative; boundary="00000000000083d4c30570129dcb"
+
+--00000000000083d4c30570129dcb
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+---------- Forwarded message ----------
+From: Atlassian <noreply@mail.notifications.atlassian.com>
+Date: Tue, Jun 26, 2018 at 1:36 AM
+Subject: This doesn't have to be a goodbye
+To: admin@renthero.com
+
+
+[image: Atlassian] <http://www.atlassian.com>
+
+This doesn't have to be a goodbye
+
+*Hi Jimmy,*
+
+It's not too late! Your trial of Atlassian Cloud (renthero.atlassian.net)
+has ended, but you can still add payment details and keep the work you've
+done so far.
+Add Payment Details
+<https://renthero.atlassian.net/admin/billing/paymentdetails>
+
+If you're no longer interested, you can cancel your subscription
+<https://renthero.atlassian.net/admin/billing/applications> at any time.
+------------------------------
+
+Please contact us <https://www.atlassian.com/contact> with any questions,
+we're always happy to help.
+
+Cheers,
+The Atlassians
+
+Privacy Policy
+<https://www.atlassian.com/legal/privacy-policy?utm_source=3D-email&utm_med=
+ium=3Demail&utm_campaign=3D>
+ =E2=80=A2 Contact us
+<https://www.atlassian.com/company/contact?utm_source=3D-email&utm_medium=
+=3Demail&utm_campaign=3D>
+ =E2=80=A2 Read our Blog
+<https://blogs.atlassian.com/?utm_source=3D-email&utm_medium=3Demail&utm_ca=
+mpaign=3D>
+
+[image: Facebook] <https://www.facebook.com/Atlassian>   [image: LinkedIn]
+<https://www.linkedin.com/company/atlassian>   [image: Twitter]
+<https://twitter.com/Atlassian>
+
+Copyright 2018 Atlassian Pty Ltd. All rights reserved. We are located at
+341 George Street, Sydney, NSW
+<https://maps.google.com/?q=3D341+George+Street,+Sydney,+NSW&entry=3Dgmail&=
+source=3Dg>,
+2000, Australia
+
+[image: Atlassian]
+<http://www.atlassian.com?utm_source=3D-email&utm_medium=3Demail&utm_campai=
+gn=3D>
+
+--00000000000083d4c30570129dcb
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_quote">---------- Forwarded messag=
+e ----------<br>From: <b class=3D"gmail_sendername">Atlassian</b> <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:noreply@mail.notifications.atlassian.com">no=
+reply@mail.notifications.atlassian.com</a>&gt;</span><br>Date: Tue, Jun 26,=
+ 2018 at 1:36 AM<br>Subject: This doesn&#39;t have to be a goodbye<br>To: <=
+a href=3D"mailto:admin@renthero.com">admin@renthero.com</a><br><br><br><u><=
+/u><div style=3D"background-color:#fff;color:#172b4d;font-family:-apple-sys=
+tem,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Oxygen,Ubuntu,Droid Sans,H=
+elvetica Neue,sans-serif;font-size:14px;font-style:normal;font-weight:400;l=
+ine-height:1.42857142857143;letter-spacing:-.005em;text-decoration-skip:ink=
+"><table cellpadding=3D"0" cellspacing=3D"0" style=3D"width:100%" class=3D"=
+m_-3348044343617167684main m_-3348044343617167684table_shrink"><tbody><tr><=
+td><table style=3D"width:520px;margin:auto;text-align:center" cellpadding=
+=3D"0" cellspacing=3D"0" class=3D"m_-3348044343617167684table_shrink"><tbod=
+y><tr><td style=3D"vertical-align:top;text-align:left"><div><table style=3D=
+"width:100%;border:0" cellpadding=3D"0" cellspacing=3D"0" class=3D"m_-33480=
+44343617167684table_shrink"><tbody><tr><td style=3D"padding-top:30px;paddin=
+g-bottom:10px;vertical-align:top;text-align:center"><a href=3D"http://www.a=
+tlassian.com" target=3D"_blank"><img src=3D"http://cpfs-cdn.atlassian.com/a=
+ssets/shared/id-summit/id-summit-email_logo_360x80_NEW.png" height=3D"24" a=
+lt=3D"Atlassian" style=3D"border:0"></a></td></tr></tbody></table></div><p =
+style=3D"margin-top:16px"></p><h1 style=3D"font-size:2.07142857em;font-styl=
+e:normal;font-weight:bolder;letter-spacing:-.01em;line-height:1.10344828;ma=
+rgin:auto;text-align:center">This doesn&#39;t have to be a goodbye</h1><p><=
+/p><p style=3D"text-align:center"><img height=3D"190" src=3D"https://cpfs-c=
+dn.atlassian.com/assets/shared/illustration-library/Atlassian-Home.png"></p=
+><span><b>Hi Jimmy,</b></span><div><div><div><p style=3D"margin-top:16px">I=
+t&#39;s not too late! Your trial of Atlassian Cloud (<a href=3D"https://ren=
+thero.atlassian.net" style=3D"border:none;background:transparent;color:#005=
+2cc;text-decoration:none" target=3D"_blank">renthero.atlassian.net</a>) has=
+ ended, but you can still add payment details and keep the work you&#39;ve =
+done so far.</p><a href=3D"https://renthero.atlassian.net/admin/billing/pay=
+mentdetails" style=3D"box-sizing:border-box;border-radius:3px;border-width:=
+0;display:inline-flex;font-style:normal;font-size:inherit;height:2.28571429=
+em;line-height:2.28571429em;margin:0;outline:none;padding:0 8px;text-align:=
+center;vertical-align:middle;white-space:nowrap;text-decoration:none;border=
+:none;background:#0052cc;color:#fff" target=3D"_blank">Add Payment Details<=
+/a><p style=3D"margin-top:16px">If you&#39;re no longer interested, you can=
+=C2=A0<a href=3D"https://renthero.atlassian.net/admin/billing/applications"=
+ style=3D"border:none;background:transparent;color:#0052cc;text-decoration:=
+none" target=3D"_blank">cancel your subscription</a>=C2=A0at any time.</p><=
+/div></div></div><hr style=3D"border:none;border-bottom:1px solid #444"><p =
+style=3D"margin-top:16px">Please <a href=3D"https://www.atlassian.com/conta=
+ct" style=3D"border:none;background:transparent;color:#0052cc;text-decorati=
+on:none" target=3D"_blank">contact us</a> with any questions, we&#39;re alw=
+ays happy to help.</p><p style=3D"margin-top:16px">Cheers,<br>The Atlassian=
+s</p><div style=3D"color:#707070;font-size:13px;line-height:19px;text-align=
+:center;margin-top:32px"><p style=3D"margin-top:16px"><a style=3D"text-deco=
+ration:none;color:#707070" href=3D"https://www.atlassian.com/legal/privacy-=
+policy?utm_source=3D-email&amp;utm_medium=3Demail&amp;utm_campaign=3D" targ=
+et=3D"_blank">Privacy Policy</a>=C2=A0=E2=80=A2=C2=A0<a style=3D"text-decor=
+ation:none;color:#707070" href=3D"https://www.atlassian.com/company/contact=
+?utm_source=3D-email&amp;utm_medium=3Demail&amp;utm_campaign=3D" target=3D"=
+_blank">Contact us</a>=C2=A0=E2=80=A2=C2=A0<a style=3D"text-decoration:none=
+;color:#707070" href=3D"https://blogs.atlassian.com/?utm_source=3D-email&am=
+p;utm_medium=3Demail&amp;utm_campaign=3D" target=3D"_blank">Read our Blog</=
+a></p><p style=3D"margin-top:16px"><a style=3D"text-decoration:none;color:#=
+707070" href=3D"https://www.facebook.com/Atlassian" target=3D"_blank"><img =
+src=3D"http://cpfs-cdn.atlassian.com/assets/shared/social-media/Facebookx2.=
+png" alt=3D"Facebook" align=3D"center" title=3D"Facebook" style=3D"line-hei=
+ght:0px;outline:0;padding:0;border:0;height:25px;width:auto"></a>=C2=A0=C2=
+=A0=C2=A0<a style=3D"text-decoration:none;color:#707070" href=3D"https://ww=
+w.linkedin.com/company/atlassian" target=3D"_blank"><img src=3D"http://cpfs=
+-cdn.atlassian.com/assets/shared/social-media/LinkedInx2.png" alt=3D"Linked=
+In" align=3D"center" title=3D"LinkedIn" style=3D"line-height:0px;outline:0;=
+padding:0;border:0;height:25px;width:auto"></a>=C2=A0=C2=A0=C2=A0<a style=
+=3D"text-decoration:none;color:#707070" href=3D"https://twitter.com/Atlassi=
+an" target=3D"_blank"><img src=3D"http://cpfs-cdn.atlassian.com/assets/shar=
+ed/social-media/Twitterx2.png" alt=3D"Twitter" align=3D"center" title=3D"Tw=
+itter" style=3D"line-height:0px;outline:0;padding:0;border:0;height:25px;wi=
+dth:auto"></a></p><p style=3D"margin-top:16px">Copyright 2018 Atlassian Pty=
+ Ltd. All rights reserved. We are located at<br><a href=3D"https://maps.goo=
+gle.com/?q=3D341+George+Street,+Sydney,+NSW&amp;entry=3Dgmail&amp;source=3D=
+g">341 George Street, Sydney, NSW</a>, 2000, Australia</p><p style=3D"margi=
+n-top:16px"><a style=3D"text-decoration:none;color:#707070" href=3D"http://=
+www.atlassian.com?utm_source=3D-email&amp;utm_medium=3Demail&amp;utm_campai=
+gn=3D" target=3D"_blank"><img src=3D"http://cpfs-cdn.atlassian.com/assets/s=
+hared/id-summit/id-summit-email_logo_360x80_NEW.png" height=3D"15px" alt=3D=
+"Atlassian"></a></p></div></td></tr></tbody></table></td></tr></tbody></tab=
+le></div><img src=3D"https://link.notifications.atlassian.com/wf/open?upn=
+=3DuoQOw53Jnd2odJf4vBwXdTwoaq2yebqUIrzck2qhSVUuYhyXVWlCE2dGw4LG2-2BdtzZwkis=
+Ng5lgO9ySnbmwPh2K9VCLM5MjkDRYLGh5GUbLittMwdhWUBi7dCLsmmThvrnuTqFFhGK4cq2qHb=
+y-2B6IeFV6Vhx7nrj60uMae2rO-2BQD9oTEIbQafn3BfEqeWVRv9-2BFt1PhcS-2B3FHCmIYJzk=
+8jIflJ3WpeEG7SfyinFT4yVg94cxOuYHf7tEmAibw4J-2B" alt=3D"" width=3D"1" height=
+=3D"1" border=3D"0" style=3D"height:1px!important;width:1px!important;borde=
+r-width:0!important;margin-top:0!important;margin-bottom:0!important;margin=
+-right:0!important;margin-left:0!important;padding-top:0!important;padding-=
+bottom:0!important;padding-right:0!important;padding-left:0!important">
+</div><br></div>
+
+--00000000000083d4c30570129dcb--

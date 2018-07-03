@@ -63,6 +63,14 @@ functions:
       PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):proxy_email.proxy_email}
       S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
 
+  emailRouter:
+    handler: handler.emailRouter
+    timeout: 120
+    environment:
+      PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):proxy_email.proxy_email}
+      S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
+      NODE_ENV: ${self:provider.stage}
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

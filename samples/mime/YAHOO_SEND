@@ -1,0 +1,54 @@
+Return-Path: <j.guo77@yahoo.com>
+Received: from sonic317-56.consmr.mail.bf2.yahoo.com (sonic317-56.consmr.mail.bf2.yahoo.com [74.6.129.111])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id o19nv1oi333s00a6q3ugk7qim99gnmnqnjc4kt01
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:53:58 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: pass (spfCheck: domain of _spf.mail.yahoo.com designates 74.6.129.111 as permitted sender) client-ip=74.6.129.111; envelope-from=j.guo77@yahoo.com; helo=sonic317-56.consmr.mail.bf2.yahoo.com;
+Authentication-Results: amazonses.com;
+ spf=pass (spfCheck: domain of _spf.mail.yahoo.com designates 74.6.129.111 as permitted sender) client-ip=74.6.129.111; envelope-from=j.guo77@yahoo.com; helo=sonic317-56.consmr.mail.bf2.yahoo.com;
+ dkim=permerror header.i=@yahoo.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFISXZLZXE4WEpqbDVqL1Fnb1FPL3lKR0tVRjVUdm1HZ01UbVgvTlphclQ4eHEvUGN4ZGxod3A5MHF0OVZFTXhSai90ZTRJNjF4VllqN3BBTElSU3d4TmVZLzVnYWg2NHFlME8zYkU4VjZpZmdpaEJjYUJEaXNERHRWK0w2MkF6VnNzY0UwdTc0YXBDQVBVeEp6UWRpNzVPSjJJd0FHd3diMzhSeVkxbFRtYWVJRW5rVmlJSGJSbDFFc3FGaU8xckdoY3pyNFdybStlYmhVZkhkTlR3eS9VVDhvSjZ3cHpUcFYreEs0U2pxdW1PN0xQNThqK0FaZm1kM3VUZDVTby9NeWF0SDdjWk5qZmowTHZONG4wbFRHTnFpWVJMdWtRRWZ6cmlNdTlOQjBaZFQ4RHNTWFNjRWpVUy9QcjBkS2E0RkE9
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=Ny9hD6VZ+XtvOcJRWcW7PuK6aj80wKSlzBLPjoCE30GWctq/Cc5zZYJmRvHsLdHuM8fLZ5G+hqjp3MJt1yAO80n5ydGgjjMzLtufT9NhRBe+dOZHy81BUFFJtciAURUIawRph3bY+CigNzY9pe/jeQ13laExbUxIEvIRMpuMf10=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530600839; v=1; bh=p9WjfNROZDpi+6lZD8pBM9L8xrA65c1VrxbX6jdPkjA=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1530600838; bh=p9WjfNROZDpi+6lZD8pBM9L8xrA65c1VrxbX6jdPkjA=; h=Date:From:To:Cc:Subject:References:From:Subject; b=m9NP483EBcbDWjSrm/THqfYdrOKnGX8+Mvg+RfWnO2DjFsihYJjD+kp3Z2YxyLu0WMC0BawPfSCvcE78F2IKOrTeNTuBRlmKiKNFsHMHlClvyunBEkrxF/6deylUmg/hoel0sYyucAbVFDmarddmAZpBrpiHvqugdZrQCwlqxDHFyWo3+Y27dmBn5nDxcVRluWJZlvdxI1lpydmZIGUM7sDqYeFTWI/Ypi3qxfbVNam3l0oFRIZ+1ZUtgXar4Uskd3h7bvrOrFepRbbsRar8qbqhkRJ916k25yqKyWJUCgkZYAdh5X3YaY4WtxqZeUhwTYEmGzOKWBTZOiJcpjqKyw==
+X-YMail-OSG: TYv5oCAVM1nQJMncHJGR5noXLoOA6s8Ca3_d7nKSyNDqYJD01wvMlqCpqgy7kZz
+ sq_tgFAgFQyGdZKez9Ishor138w5gNj1G6PDsUih.pCbj.Yx6VsZQlvFEL_UXb5Ct8bPu_040S.q
+ r2MUp3AhMwV5XfEV5rBZg23XAIGnVnvm_0MHEExpcIaBz8Tyu4FsukJVhn1OihQDe4wk3cANegT2
+ I_fwsvS29afqo..oUWXsvVzm85GBCXR00nn7cIV1KT6tv2YGL3llhrHiB_deUKCBwoWhCpjb8XPB
+ c75XoPTlkYoRZlhK2vK24wl_UDQTrmfoG7ODyQc_zmvLaZugVmRzdxNYFirrS99VoJ0epkHF_pH.
+ zokSbg.vddfsZhk3O_KlPh.yR4xgxtWWqAJVm3QNlPoyMTkAYiAOoe5rfW57ejmVE5BufrUoGw6j
+ ZHWlvTUbIZ57gHnkRAlLlSB9O685SeK6oZtuatXAtmHW71nhdbdIHcsGrNs9ID0p2FDLG2QBfHgJ
+ 98t_b.fL9gjfxoN3yUZGN6cPxlr9_P2N1Riw7xptG6qszuvHE06ZMn7_HM3ZPXv1KBIZSage8ov3
+ y8Mssh2nNojCplSEphksvPzqGFS8sJLbtzIOM8usu9dWcbRXhqUpH1NBYJ31uw2RoAbrvx1Ee1ec
+ 4DsfTpuXALQzzE2T7ylghPuqiBEP9v2QczLf8YZXZ5q1ejkwZNT7K.vi.SAZ8q.tGzlHGgKi2IlG
+ 9R9JABiaZPCp864CASnNQLDstq93KC943fAMA2MRhf5K5kYEDiQtusdZUqNfOVw5NnGkWA8.q3FG
+ AGHk5bftqOcr3zhyt5.9Fr5fNIxxs.crJpDGZXBDkGyrgBUoOdmEZRNlYDC47C9R2HF_J31EB1pd
+ A73jKU6Yq2GVYbaMHWcfsCX1SQEpMNguGos3G6jkYFcJ9hucxTB77U_hgyek7nvcqBeGnxg7uwCj
+ l3GqbBBh7ZwOloO1yjHLv
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic317.consmr.mail.bf2.yahoo.com with HTTP; Tue, 3 Jul 2018 06:53:58 +0000
+Date: Tue, 3 Jul 2018 06:49:57 +0000 (UTC)
+From: Jimmy Guo <j.guo77@yahoo.com>
+To: "heffe@myrenthelper.com" <heffe@myrenthelper.com>, 
+	"jimmy@renthero.com" <jimmy@renthero.com>
+Cc: "kangze@renthero.com" <kangze@renthero.com>
+Message-ID: <136795789.1908670.1530600597923@mail.yahoo.com>
+Subject: yahoo email
+MIME-Version: 1.0
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_1908669_2003678440.1530600597922"
+References: <136795789.1908670.1530600597923.ref@mail.yahoo.com>
+X-Mailer: WebService/1.1.12062 YMailNorrin Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36
+Content-Length: 589
+
+------=_Part_1908669_2003678440.1530600597922
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+i am sending this email from yahoo
+------=_Part_1908669_2003678440.1530600597922
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html><head></head><body><div style="font-family:Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;"><div>i am sending this email from yahoo</div><div style="font-family:Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;"></div></div></body></html>
+------=_Part_1908669_2003678440.1530600597922--

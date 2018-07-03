@@ -39,58 +39,72 @@ module.exports = function(event, context, callback){
   console.log('------ SES EMAIL OBJECT ------')
   const email = event.Records[0].ses.mail
   console.log(email)
-  const toAddress = email.headers.filter((header) => {
-    return header.name === 'To' && header.value.indexOf(process.env.PROXY_EMAIL) > -1
+  const toAddresses = email.destination.filter((to) => {
+    return to.indexOf(process.env.PROXY_EMAIL) > -1
   })
+  console.log(toAddresses)
   console.log('------ EMAIL TO: ------')
-  console.log(toAddress[0])
-  if (toAddress[0]) {
+  // console.log(toAddresses[0])
+  if (toAddresses && toAddresses[0]) {
     // let email
-    console.log(`------ Checking landlord email relationships for this proxy email: ${toAddress[0].value} ------`)
-    rdsAPI.checkLandlordRelationship(toAddress[0].value)
-      .then((rel) => {
-        console.log(`------ Landlord Email Relationship Found ------`)
-        console.log(rel)
-        const fromAddress = email.commonHeaders.returnPath
-        console.log(`------ EMAIL FROM: ------`)
-        console.log(fromAddress)
-        if (rel.ai_email === fromAddress) {
-          // must be ai/kaushika replying to a lead, so forward to that lead_email
-          console.log(`------ This email was an agent responding back to a lead ------`)
-          return agentToLead.fn(rel, email, toAddress[0].value, fromAddress)
-        } else {
-          // must be a lead messaging the ai/kaushika
-          // save the lead_email --> ai_email relationship, then forward to ai_email
-          console.log(`------ This email was a lead inquiring to an agent ------`)
-          return leadToAgent.fn(rel, email, toAddress[0].value, fromAddress)
-        }
-      })
-      .then((data) => {
-        console.log(`------ SUCCESSFULLY PROCESSED THIS EMAIL ------`)
-        console.log(`------ DONE ------`)
-        // RESPONSE
-        const response = {
-          statusCode: 200,
-          body: JSON.stringify({
-            message: 'The message was successfully forwarded!',
-            input: event,
-          }),
-        }
-        callback(null, response)
-      })
-      .catch((err) => {
-        console.log(`------ FAILED ------`)
-        console.log(err)
-        // RESPONSE
-        const response = {
-          statusCode: 500,
-          body: JSON.stringify({
-            message: 'An error occurred!',
-            input: err,
-          }),
-        }
-        callback(null, response)
-      })
+    const allReceipientPromises = toAddresses.slice(0,1).map((to) => {
+      console.log(`------ Checking landlord email relationships for this proxy email: ${to} ------`)
+      return rdsAPI.checkLandlordRelationship(to)
+                    .then((rel) => {
+                      console.log(`------ Landlord Email Relationship Found ------`)
+                      console.log(rel)
+                      const fromAddress = email.commonHeaders.returnPath
+                      console.log(`------ EMAIL FROM: ------`)
+                      console.log(fromAddress)
+                      if (rel.ai_email === fromAddress) {
+                        // must be ai/kaushika replying to a lead, so forward to that lead_email
+                        console.log(`------ This email was an agent responding back to a lead ------`)
+                        return agentToLead.fn(rel, email, to, fromAddress)
+                      } else {
+                        // must be a lead messaging the ai/kaushika
+                        // save the lead_email --> ai_email relationship, then forward to ai_email
+                        console.log(`------ This email was a lead inquiring to an agent ------`)
+                        return leadToAgent.fn(rel, email, to, fromAddress)
+                      }
+                    })
+                    .then((data) => {
+                      console.log(`------ SUCCESSFULLY PROCESSED THIS EMAIL ------`)
+                      console.log(`------ DONE ------`)
+                      return Promise.resolve(data)
+                    })
+                    .catch((err) => {
+                      console.log(`------ FAILED ------`)
+                      console.log(err)
+                      return Promise.reject(err)
+                    })
+    })
+    Promise.all(allReceipientPromises)
+            .then((results) => {
+              console.log(`------ SUCCESS: FORWARDED EMAILS TO ALL RECEIPIENTS ------`)
+              console.log(results)
+              // RESPONSE
+              const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                  message: 'The messages were successfully forwarded!',
+                  input: event,
+                }),
+              }
+              callback(null, response)
+            })
+            .catch((err) => {
+              console.log(`------ FAILURE: COULD NOT FORWARD EMAILS TO ALL RECEIPIENTS ------`)
+              console.log(err)
+              // RESPONSE
+              const response = {
+                statusCode: 500,
+                body: JSON.stringify({
+                  message: 'An error occurred!',
+                  input: err,
+                }),
+              }
+              callback(null, response)
+            })
   } else {
     console.log('------ ERROR: No matching proxy to:address found ------')
     callback(null, 'No Matching Proxy To:Address found')
