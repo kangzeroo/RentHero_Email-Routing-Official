@@ -267,6 +267,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
         <CORP_ID+'_OPEN_TO_SUGGESTIONS'>
       ]
     */
+    // [TODO]: Implement this function
     const estimated_ad = {
       ad_id: 'xxxx-xxxx-xxxx',
       supervision_settings: {
