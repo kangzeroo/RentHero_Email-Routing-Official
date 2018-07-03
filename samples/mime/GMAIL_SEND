@@ -1,0 +1,62 @@
+Return-Path: <admin@renthero.com>
+Received: from mail-lj1-f194.google.com (mail-lj1-f194.google.com [209.85.208.194])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id gaada41a1viu54514015fuktld515gullg4pn981
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:38:46 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: none (spfCheck: 209.85.208.194 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.208.194; envelope-from=admin@renthero.com; helo=mail-lj1-f194.google.com;
+Authentication-Results: amazonses.com;
+ spf=none (spfCheck: 209.85.208.194 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.208.194; envelope-from=admin@renthero.com; helo=mail-lj1-f194.google.com;
+ dkim=pass header.i=@renthero-com.20150623.gappssmtp.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFGRzJFVlNzc0twdmcrN1FORkRzWWpCR2YrWFU2ek5yQ2ZWZ0NjQjdFS24xVTRpZjBQcXgwajMwb2pvejliR0tLS2lJdTZXcGFXaVhlQmZsQnQwbVE3S2xQVFpwbzB6c24rNFc2YmdGT1lrZSswekJwU256YXVWMUo1VGtwM01WMWRibm9uUWJ4aXZuL0U0eW43aXdka0NxRGg5T2NYUXp2TngvRm1iRGRJRkZFZXJkVUhnWUZkTGhnZ2ZJUlh4SWRkaTVVcDNEY202QUJ0MzNKTWpxdUk2VjNxRyttYlRob0RrR3g4MC9nYVhRMTV6QllUd0ZyNW4zQXlObzlCNjRMc3VWQU83azR2STJsaGgxdU1JRHBIbGhGdi8yd3ZhZUg1U2pSWEg1UVZHN3c9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=aS81GInFtsAC710bE8a42o2H1wZcOAb3P8TN2hUzfIEE/OkaFSw0htS80/SUSYrpaPwJcLWCZwbinoUVJ02audvAMk/V04BUtg8NUgZDJDDtqHW35A9kGoiNoe+bm0zH9bSKZP/J5mcRwB86xqigsVI3BqMimr7uL2POE87cfs8=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530599927; v=1; bh=mWbPdFH0wKfr4zR+pSokAnphju6nyXlipq6uC9exmDE=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+Received: by mail-lj1-f194.google.com with SMTP id p6-v6so619253ljc.5
+        for <heffe@myrenthelper.com>; Mon, 02 Jul 2018 23:38:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=renthero-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:from:date:message-id:subject:to:cc;
+        bh=mWbPdFH0wKfr4zR+pSokAnphju6nyXlipq6uC9exmDE=;
+        b=saA5Hw3iv8m1H7hqRJy11sHJNWheDkS1QihsUhwmIa8kuMSXuh+H9epGv+42RcerYu
+         BNoPfJk3d9ZFUh7Knfv2mi9SrpCO8oPiElZddziPyE37Pd3fcxM9CRFvQHDzVFh9RgET
+         dPLAaqIoyjJ4nTxnNl+hkve8WDlXwMZsYbNu1cIsHqTMzun/rs//8mwcMmudlyECrPCt
+         9o2MRH8oxNpgdgkMk0osc2uUsL5o6zqw87kZd+yPCpzW1R5Ifix5DBlyohtmyFGLUEE5
+         7z/umgAuU9oR+ZrsmMigQw7QJux3S75ydKD+Fxsisbb5loXK7YOMtaN6nrOc3GeSrvWj
+         N7qw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=mWbPdFH0wKfr4zR+pSokAnphju6nyXlipq6uC9exmDE=;
+        b=A8wRDSNai/26f54RO41X5QXRwv+bUW6NIP9FPyUo6zQG0LjC/XRvhGW6rmu2zBTd0E
+         MW/OAdqd/dMH+p74QMvdVKkQBRyl6reKhxgUhZ0QpOe+bFmvlkeEtpRdnK1Hs4VC6DN2
+         uw6GnEuIa6ZWuwBXyi1/84stu6K1Gxw6y+2lJr8DOlDAgs3oPMciadc7xXoKP8UhjWGK
+         xrnxHcPncAPTyPG53peojA4hIk5IV1YVpNr4leCpxMgBSq9DbIW9+AOZM9lkjG10nASV
+         aAseO4oSF9qcicTupsdPNA5M7dXbgeQVPPMcI8t99vtwb6Z+SgqmdqCMws7KOEghaui/
+         acuA==
+X-Gm-Message-State: APt69E1wzUwXA40cgpOAOO9pfLaGYodt5of2B7h9c4v6vpnjxjei8xfH
+	oL+D++cvJYduehC8iqq/qrWzC3bdhwKmfgcWbHMNzF2Q
+X-Google-Smtp-Source: AAOMgpfUfAyZ2NvTg+IR63xP/BJfRWIn7pFqSg387+0OBZkiKsjGk68qRjPnmEhOfgGgTjR+BLJaeIIOEriT3/4iQgY=
+X-Received: by 2002:a2e:7c12:: with SMTP id x18-v6mr318121ljc.71.1530599924507;
+ Mon, 02 Jul 2018 23:38:44 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 2002:ab3:408a:0:0:0:0:0 with HTTP; Mon, 2 Jul 2018 23:38:43 -0700 (PDT)
+X-Originating-IP: [208.72.125.2]
+From: RentHero Admin <admin@renthero.com>
+Date: Tue, 3 Jul 2018 02:38:43 -0400
+Message-ID: <CAHSKJ1i4dPnLM1B2RNm9TaKni9nKkoBX=132W2QYWroGLWHBwQ@mail.gmail.com>
+Subject: GMAIL STANDARD EMAIL
+To: heffe@myrenthelper.com, Jimmy Guo <jimmy@renthero.com>
+Cc: Kangze Huang <kangze@renthero.com>
+Content-Type: multipart/alternative; boundary="000000000000cb44230570129029"
+
+--000000000000cb44230570129029
+Content-Type: text/plain; charset="UTF-8"
+
+testing this shit
+
+--000000000000cb44230570129029
+Content-Type: text/html; charset="UTF-8"
+
+<div dir="ltr">testing this shit</div>
+
+--000000000000cb44230570129029--

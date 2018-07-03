@@ -1,0 +1,305 @@
+Return-Path: <admin@renthero.com>
+Received: from mail-lf0-f67.google.com (mail-lf0-f67.google.com [209.85.215.67])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id 1icn0u3nc98d00drpoqqieir1blr6ojm6f45kp01
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:40:52 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: none (spfCheck: 209.85.215.67 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.215.67; envelope-from=admin@renthero.com; helo=mail-lf0-f67.google.com;
+Authentication-Results: amazonses.com;
+ spf=none (spfCheck: 209.85.215.67 is neither permitted nor denied by domain of renthero.com) client-ip=209.85.215.67; envelope-from=admin@renthero.com; helo=mail-lf0-f67.google.com;
+ dkim=pass header.i=@renthero-com.20150623.gappssmtp.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFGYkQ3QUxrRWx4Rmd6eVJIdzh2L3ZQd0I0anpFRC9RQ2s3RkN6d2MxMWNTUTZ4V29XSnVzYkllKzJhT2dTc3NtRVlpZ0t3OU5GVlpEMFc3bnIrZTBzbW02Z2huMmxsR0NvUkJIZ1AvRlg2eFA2NGo1K1RSQS9HMzF0RXdsVTVaTnlzcjgrQ3FrWjhhb0ptcStPN3BIVXpyc1VmN0dVWXpGT095bXpHK3VDYzJSUGtWR2dBemo3RnJzR0t5d0RBSlNKQldFeEs2aW55dXQvUktFUWVnbXVmdHI3OUlYalJSMkQ4dDJkVmlFMnNqcS9kMmEyb01kdlVEUUV5a0diSXQzWk9vV1c4Nk5ZR29XWTd2MDc4NTV4Y0xJbldTNFRsa2pJL3FJVkovVW5sRGc9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=cZZsrYZEyZaZZmte3bbm+K+TPLgD55hbEHfaUvicEsPEQe5/x1+TWo+9RIY287cdcR0sZsU7rmjolY0EOdBNXbiJcPORpyVLpf3Yzb9F1yxPXXyx35dr45Sg+T1RR4QRskh754AjzIk2LAbpVDthzIleMUlrgI8VtcSoTEgEkjE=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530600052; v=1; bh=CeGVzX4eCVZfkKJNy6TmHhLd1Xr3HuK75uPzj9nwA1M=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+Received: by mail-lf0-f67.google.com with SMTP id l16-v6so650701lfc.13
+        for <heffe@myrenthelper.com>; Mon, 02 Jul 2018 23:40:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=renthero-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc;
+        bh=wZ7xlQ89epBUYZzLuw6mFQhNyOL/b+op0X2x6HAU3ng=;
+        b=IGzAYCXVoFMZOow0XNg/gO1gc21Ii2p8GbKhrpCyisqW0jMs1eAVCSgCyziz3sBkwH
+         KSJRqVg75/8wYke6sGdU5obO6BiqIdxwLTxrUiFE8nPE02ByC68SeOddY++GrtP9pGWu
+         WsKG/nTvSHoXeWOEXXcOazTMfkkTlbKatRpxq3bu9zg8mab2NDDqoEfgXbgugHh+spN6
+         j37vbKqK8bb+VEffMdiKhnupiCsX1Qn/n2kqmAozuaJP0zIdZl3gtZ1vO2Sn5bXWcbjN
+         3+XJlCjvwfh0XDzlQdVrcE85c5/rxbChmJg4awEd0HdnZvmpLdUSxe+8l6ZPGNSEAeol
+         HgZw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:in-reply-to:references:from:date
+         :message-id:subject:to:cc;
+        bh=wZ7xlQ89epBUYZzLuw6mFQhNyOL/b+op0X2x6HAU3ng=;
+        b=p5gRTLg/YvBCP5gHlDFuuLVU0KjcEkoJ5GBMwIff5wCSWJ3Gj+i87apORyYBegKaUR
+         ACvQJpulZ6Kyc9v5Hw0xxHwiETCC2OY6uzRA1PtDZFYXFFrXFvpm7qUXsc896TO88fYb
+         gwLJG1z5molCNWczUbuFujUcWByxwBQmg6okNTQhC6tX1BaYpCjwUrEVNX1hBUdxcqkk
+         TMzigTwNuB+hRdBHZIweg24BEAu5ajq/xQuOIrtM4wUAqTI9n1PpG5HhpnM15ayTLqKP
+         4KKPKPoeFQs7fPdk3uO4UoAy3ZVrrcduB5HPsCcqVjreFzPt2qZyEfVvTxwmF3T8GoB2
+         Wegg==
+X-Gm-Message-State: APt69E133Lf2br4g8ZTNJHXdgAee7UkU2M4QwcdbBI343IYtfIUUEV3r
+	uIwlsWFxF++fC3xWoUkhBOq4/aJn9GlsfwjiUArcKA==
+X-Google-Smtp-Source: AAOMgpcw1wnIneinxEhVoA/I5Ns4v/dEPqe1qy7/DLv+jg2VqIcl5xd7e4ATO7dCRx6uxa1Vb3AGkjWWFOoHQh4le74=
+X-Received: by 2002:a19:19ca:: with SMTP id 193-v6mr9721938lfz.25.1530600050718;
+ Mon, 02 Jul 2018 23:40:50 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 2002:ab3:408a:0:0:0:0:0 with HTTP; Mon, 2 Jul 2018 23:40:49 -0700 (PDT)
+X-Originating-IP: [208.72.125.2]
+In-Reply-To: <8e189dd84109430e.1530465908327.100081937.10004962.en-US.830984feab54c2f5@google.com>
+References: <8e189dd84109430e.1530465908327.100081937.10004962.en-US.830984feab54c2f5@google.com>
+From: RentHero Admin <admin@renthero.com>
+Date: Tue, 3 Jul 2018 02:40:49 -0400
+Message-ID: <CAHSKJ1g=CCVuFLv65+=+1Xux3O_k-MnFw-iEeWwxtOdR1SaggQ@mail.gmail.com>
+Subject: Re: G Suite: Your invoice is available for renthero.com
+To: Google Payments <payments-noreply@google.com>, heffe@myrenthelper.com, 
+	Jimmy Guo <jimmy@renthero.com>
+Cc: Kangze Huang <kangze@renthero.com>
+Content-Type: multipart/alternative; boundary="000000000000510e970570129845"
+
+--000000000000510e970570129845
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+REPLY TO example from gmail
+
+On Sun, Jul 1, 2018 at 1:25 PM, Google Payments <payments-noreply@google.co=
+m
+> wrote:
+
+> [image: G Suite]
+> Your G Suite monthly invoice is available. Please find the PDF document
+> attached at the bottom of this email.
+> IMPORTANT: The balance will be automatically charged so you don=E2=80=99t=
+ need to
+> take any action.
+>
+>           Domain: renthero.com
+>
+>           Name: RentHero
+>
+>           Invoice number: 3473804384
+>
+>           Payments profile ID: 2098-9338-6882
+> If you want to view your payment history or update your payment info,
+> visit your account by following the instructions below:
+>
+>    - Sign in to your G Suite Admin Console
+>    <http://www.google.com/appserve/mkt/p/AJ-PF7z-bEt91-JlVUYZXkL2fWWkiQsT=
+X2tQz1m-u_myDPAUZ3RZagwW8IHBS_lDy29SEE3QlTwPEZiFYQ>
+>    at admin.google.com.
+>       - If you have trouble accessing, refer to this guide
+>       <https://www.google.com/appserve/mkt/p/AJ-PF7xo80_MIoGRvVOck0-fTSZX=
+AxSaV1O3B27iaoocyEZiww4z48aA4UeqErw7KDbeKgN9MBmI7UjqlqIMXLpju3LHIMeghQezYeS=
+WdNTb4kVlmkOJ>
+>       .
+>    - Select *'Billing'*.
+>    - Select the *'Actions'* button on the right hand side of your G Suite
+>    subscription.
+>    - Select *'Access billing account'*.
+>    - Select the *Red Alert* at the top of the page to fix any issues with
+>    your primary payment method or billing contacts.
+>
+> Help Center
+> <https://www.google.com/appserve/mkt/p/AJ-PF7zm8ELudwYsFHR71c803hO8ATgvLR=
+-bnKyLSBRbPTRQVXGpwslIxlO4iT_hDSrPyaqaZ1cEeEu9DOcYxrEy-Na-Apc0ICQrQ4iuH0VA>=
+ Contact
+> Us
+> <http://www.google.com/appserve/mkt/p/AJ-PF7zB1wCHTVdQhwiFYh-ZUsxSuknkE_C=
+wQg2dMhSuuxyJGEU69lutCeMp2M-TRbd4-DduT_99xNfOqZalQECKyay0tM5lfKrIDcjIJGjRWE=
+SheU5fUv6Aw1WBmBmh>
+> G Suite customer ID: renthero.com   |   Payments profile ID:
+> 2098-9338-6882
+> Google LLC 1600 Amphitheatre Parkway, Mountain View, CA 94043
+> To stop receiving email about this payments profile, you can unsubscribe
+> <https://www.google.com/appserve/mkt/p/AJ-PF7z-TwxgEnYBFXAVW_nXYvxh3j622i=
+zFc4kX_NfZilsG4i8B-_thS6Uc1ogqLfKZ2eYJius0dgewA2asCWLsW6CTVSpsjy_exv_r4yH4e=
+AvkgksLLCkoROnSl0ELM8lKgNp7YwZHELHP7nMhLEfwchyFBOqY4WZygl4Ql7rMCa4KWzuyOIPv=
+9p8R3XAzTuvGlYJmpwnSI6lod8UoSob2JFA4AzKftTznXQW5PIKmlipqV10f2DeFW39y2j22gIj=
+NVXPfh52qgKXgTT1mRuDelpZWFKz1wzLNGJsR9g-nSdnfxisVkwq7uk7FKy91unk5RnZfFFXdUY=
+Cx9gb6WWUQ>.
+>
+> You have received this mandatory service announcement to update you about
+> important changes to G Suite or your account.
+> [image: Google]
+>
+
+--000000000000510e970570129845
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">REPLY TO example from gmail</div><div class=3D"gmail_extra=
+"><br><div class=3D"gmail_quote">On Sun, Jul 1, 2018 at 1:25 PM, Google Pay=
+ments <span dir=3D"ltr">&lt;<a href=3D"mailto:payments-noreply@google.com" =
+target=3D"_blank">payments-noreply@google.com</a>&gt;</span> wrote:<br><blo=
+ckquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #c=
+cc solid;padding-left:1ex">=20
+=20
+
+
+=20
+
+
+
+
+
+
+<u></u>
+
+   =20
+       =20
+               =20
+   =20
+<div>
+
+<div style=3D"background-color:#ffffff">
+  <div style=3D"margin:0 auto;max-width:600px">
+  <div style=3D"margin:0 0 0 16px">
+    <img src=3D"http://services.google.com/fh/files/emails/gsuite_dark_logo=
+.png" width=3D"140" alt=3D"G Suite" vspace=3D"13">
+  </div>
+  </div>
+</div>
+
+<center>
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" style=3D"width:600p=
+x;max-width:600px">
+<tbody><tr><td>
+
+<div style=3D"font-family:Roboto,&#39;Segoe UI&#39;,&#39;Helvetica Neue&#39=
+;,Frutiger,&#39;Frutiger Linotype&#39;,&#39;Dejavu Sans&#39;,&#39;Trebuchet=
+ MS&#39;,Verdana,Arial,sans-serif;color:#444444;font-size:14px;font-weight:=
+300;line-height:24px;margin:0 auto;padding:0;max-width:600px">=09
+
+<div style=3D"border-bottom:1px solid #bdbdbd"></div>  <div style=3D"color:=
+#4285f4;font-size:32px;font-weight:300;line-height:42px;margin:32px 16px 40=
+px 16px">
+    =20
+  </div>
+  <div style=3D"margin:0 16px 32px 16px;font-size:14px;font-weight:300">
+    Your G Suite monthly invoice is available. Please find the PDF document=
+ attached at the bottom of this email.
+  </div>
+  <div style=3D"margin:0 16px 32px 16px;font-size:14px;font-weight:300">
+    IMPORTANT: The balance will be automatically charged so you don=E2=80=
+=99t need to take any action.
+  </div>
+  <div style=3D"margin:0 16px 32px 16px;font-size:14px;font-weight:300">
+    <p>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Domain: =
+<a href=3D"http://renthero.com" target=3D"_blank">renthero.com</a></p>
+<p>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Name: RentHe=
+ro</p>
+<p>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Invoice numb=
+er: 3473804384</p>
+<p>=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Payments pro=
+file ID: 2098-9338-6882</p>
+
+  </div>
+  <div style=3D"margin:0 16px 32px 16px;font-size:14px;font-weight:300">
+    If you want to view your payment history or update your payment info, v=
+isit your account by following the instructions below:
+  </div>
+
+
+
+  <div style=3D"margin:0 24px 32px 32px;font-size:14px;font-weight:300">
+    <ul><li>Sign in to your     <a href=3D"http://www.google.com/appserve/m=
+kt/p/AJ-PF7z-bEt91-JlVUYZXkL2fWWkiQsTX2tQz1m-u_myDPAUZ3RZagwW8IHBS_lDy29SEE=
+3QlTwPEZiFYQ" style=3D"color:#4285f4;text-decoration:none" target=3D"_blank=
+">
+G Suite Admin Console</a> =20
+ at <a href=3D"http://admin.google.com" target=3D"_blank">admin.google.com<=
+/a>.<ul><li>If you have trouble accessing, refer to   <a href=3D"https://ww=
+w.google.com/appserve/mkt/p/AJ-PF7xo80_MIoGRvVOck0-fTSZXAxSaV1O3B27iaoocyEZ=
+iww4z48aA4UeqErw7KDbeKgN9MBmI7UjqlqIMXLpju3LHIMeghQezYeSWdNTb4kVlmkOJ" styl=
+e=3D"color:#4285f4;text-decoration:none" target=3D"_blank">
+this guide</a>.</li></ul></li><li>Select <strong>&#39;Billing&#39;</strong>=
+.</li><li>Select the <strong>&#39;Actions&#39;</strong> button on the right=
+ hand side of your G Suite subscription.</li><li>Select <strong>&#39;Access=
+ billing account&#39;</strong>.</li><li style=3D"word-break:break-word">Sel=
+ect the <strong>Red Alert</strong> at the top of the page to fix any issues=
+ with your primary payment method or billing contacts.</li></ul>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+<div style=3D"border-top:1px solid #bdbdbd;padding-top:32px;text-align:cent=
+er;line-height:14px">
+     <div>
+
+
+
+
+    <a href=3D"https://www.google.com/appserve/mkt/p/AJ-PF7zm8ELudwYsFHR71c=
+803hO8ATgvLR-bnKyLSBRbPTRQVXGpwslIxlO4iT_hDSrPyaqaZ1cEeEu9DOcYxrEy-Na-Apc0I=
+CQrQ4iuH0VA" style=3D"color:#4285f4;display:inline-block;margin:0 20px;text=
+-transform:uppercase" target=3D"_blank">
+       Help Center
+     </a>
+    <a href=3D"http://www.google.com/appserve/mkt/p/AJ-PF7zB1wCHTVdQhwiFYh-=
+ZUsxSuknkE_CwQg2dMhSuuxyJGEU69lutCeMp2M-TRbd4-DduT_99xNfOqZalQECKyay0tM5lfK=
+rIDcjIJGjRWESheU5fUv6Aw1WBmBmh" style=3D"color:#4285f4;display:inline-block=
+;margin:0 20px;text-transform:uppercase" target=3D"_blank">
+       Contact Us
+     </a>
+
+ =20
+
+  <div style=3D"margin:12px 12px;font-size:12px;line-height:16px">
+      G Suite customer ID: <a href=3D"http://renthero.com" target=3D"_blank=
+">renthero.com</a>=20
+    =C2=A0=C2=A0|=C2=A0=C2=A0=20
+
+  Payments profile ID: 2098-9338-6882
+
+  </div>
+
+  <div style=3D"margin:12px 12px;font-size:12px;line-height:16px;margin-bot=
+tom:0px">
+    Google LLC 1600 Amphitheatre Parkway, Mountain View, CA 94043
+  </div>
+
+
+  <div style=3D"margin:12px 12px;font-size:12px;line-height:16px;margin-top=
+:0px;margin-bottom:0px">
+    To stop receiving email about this payments profile, you can   <a href=
+=3D"https://www.google.com/appserve/mkt/p/AJ-PF7z-TwxgEnYBFXAVW_nXYvxh3j622=
+izFc4kX_NfZilsG4i8B-_thS6Uc1ogqLfKZ2eYJius0dgewA2asCWLsW6CTVSpsjy_exv_r4yH4=
+eAvkgksLLCkoROnSl0ELM8lKgNp7YwZHELHP7nMhLEfwchyFBOqY4WZygl4Ql7rMCa4KWzuyOIP=
+v9p8R3XAzTuvGlYJmpwnSI6lod8UoSob2JFA4AzKftTznXQW5PIKmlipqV10f2DeFW39y2j22gI=
+jNVXPfh52qgKXgTT1mRuDelpZWFKz1wzLNGJsR9g-nSdnfxisVkwq7uk7FKy91unk5RnZfFFXdU=
+YCx9gb6WWUQ" style=3D"color:#4285f4;text-decoration:none" target=3D"_blank"=
+>
+unsubscribe</a>.
+  </div>
+
+  <div style=3D"margin:12px 12px;font-size:12px;line-height:16px;margin-top=
+:0px;margin-bottom:32px">
+    You have received this mandatory service announcement to update you abo=
+ut important changes to G Suite or your account.
+  </div>
+
+     </div>
+     <div>
+<img src=3D"http://services.google.com/fh/files/emails/wa_google_logo.png" =
+width=3D"82" style=3D"margin:0" alt=3D"Google">
+</div>
+=09
+</div>
+ =20
+ =20
+</div>
+
+</td></tr></tbody></table></center></div>
+
+
+<img height=3D"1" width=3D"3" src=3D"https://www.google.com/appserve/mkt/im=
+g/AJ-PF7xjKySgBzmHEoq9hbAo-bTtCR-yIwLdrXMYjrjNex7J.gif"></blockquote></div>=
+<br></div>
+
+--000000000000510e970570129845--

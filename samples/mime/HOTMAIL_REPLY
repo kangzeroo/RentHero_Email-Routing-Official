@@ -1,0 +1,888 @@
+Return-Path: <k35huang@edu.uwaterloo.ca>
+Received: from CAN01-QB1-obe.outbound.protection.outlook.com (mail-eopbgr660050.outbound.protection.outlook.com [40.107.66.50])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id t25a4r3fkm2fr7fabopev87v7rfoeljpg3b48ug1
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:46:57 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: pass (spfCheck: domain of edu.uwaterloo.ca designates 40.107.66.50 as permitted sender) client-ip=40.107.66.50; envelope-from=k35huang@edu.uwaterloo.ca; helo=mail-eopbgr660050.outbound.protection.outlook.com;
+Authentication-Results: amazonses.com;
+ spf=pass (spfCheck: domain of edu.uwaterloo.ca designates 40.107.66.50 as permitted sender) client-ip=40.107.66.50; envelope-from=k35huang@edu.uwaterloo.ca; helo=mail-eopbgr660050.outbound.protection.outlook.com;
+ dkim=pass header.i=@eduuwaterloo.onmicrosoft.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFFQ3B4N1JxdEtTK2ZvSW9xUWhFZ2l4ZWpOQmtFY1lpMWgxV1IrQ2N3a3hmUmlQbzRJSjJSSEVUbnZWblZnQldjTndFUXhMSURQbEhjdVc5OHI1UGU2bTAyM1pZaEJXUERDaE1RMCt6L3pBVmZBRnFxQ3BHRlRwYkZCa1M5VDUvUHRRRWtUU0NWM1NhYUNwZlJiY2lRS0RSWnMxbFd6d1NQQUYwUDErVGpFQkJVOWRyRkp2dHNQb1lZMGduVjVZQkgyMjZVeSs0c0kxaVNRaWl6OXBLUnVoZElaa2tOSGt1STdTcU5MVnI1SUpUK1d4M2pRdndhZEtRT0dkcVRhbWYvVzZaWlZtRFZUdEFiZi83akUyd252alowRmhldmxjNGNzRWE1eTdhWisyVVE9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=CtU23Yur4ikgY88hVM91bgtCp9MVj8hi7waVBIaVmbuO3UlB+4P/ENr2eIaz9LhOLeoMN34WQXCvdZcD1yJQz95etOjaMWLUQdfw+0QyA4QejCIiRtqHjIFmuFpoC6TO9FT7Y3N069mWoNEKc7GzxBLjXCjwH/Bvoew5K/e7zEc=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530600418; v=1; bh=AbFsrxC6yJ+pDCtZAfB1YnFWvziYRF2gJSMnexWQ5p0=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=eduuwaterloo.onmicrosoft.com; s=selector1-edu-uwaterloo-ca;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5d1bA1JKL4qbpSLyJyLxG0p6uftwcK1vHzZ15yI4R0k=;
+ b=SU+ygOW9JpsI6ORMWxsv/5sxO015Xlhr7mq3fPuOtEq7S6mQ15nzZrt7YMEyjDb3cRdUHgfaksXiGBPyBGOj4d9Z3ZvMuNkmJQ2uCOHkWItPUr4dEND3JQV6W1l6pg2+UCxOVJEekk42jEQuwiMTms9rADQ1OHHg0WjnUMkJ5HI=
+Received: from YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM (52.132.71.13) by
+ YQBPR0101MB1618.CANPRD01.PROD.OUTLOOK.COM (52.132.70.13) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.906.24; Tue, 3 Jul 2018 06:46:55 +0000
+Received: from YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2d85:c578:3d23:9e10]) by YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2d85:c578:3d23:9e10%3]) with mapi id 15.20.0930.016; Tue, 3 Jul 2018
+ 06:46:55 +0000
+From: Kangze Huang <k35huang@edu.uwaterloo.ca>
+To: RS Rewards <RSRewards@lists.uwaterloo.ca>, "heffe@myrenthelper.com"
+	<heffe@myrenthelper.com>, "jimmy@renthero.com" <jimmy@renthero.com>
+CC: "kangze@renthero.com" <kangze@renthero.com>
+Subject: =?Windows-1252?Q?Re:_Tell_us_how_you_like_to_shop!=A0?=
+Thread-Topic: =?Windows-1252?Q?Tell_us_how_you_like_to_shop!=A0?=
+Thread-Index: AQHT+SZRgkAOXHfYEUuA1axcLwwEsaR9QN1T
+Date: Tue, 3 Jul 2018 06:46:55 +0000
+Message-ID: <YQBPR0101MB174515E513A8C8A0025BA4B5F8420@YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM>
+References: <1f13933b75f72786848dc0493.e16ce7215a.20180531184213.cf5060158c.82d04536@mail195.suw101.mcdlv.net>
+In-Reply-To: <1f13933b75f72786848dc0493.e16ce7215a.20180531184213.cf5060158c.82d04536@mail195.suw101.mcdlv.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=k35huang@edu.uwaterloo.ca; 
+x-originating-ip: [208.72.125.2]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1;YQBPR0101MB1618;7:s4iWz/PiphUfhQkbCTbPotILcjzmO2oU0n0nICzLWOqvDg0BIM3pLjgkmSwCjIJM33yQm1EJ2xrnXT3kGeK8r5M5nSN/EBbAiPhEfwfPQRBTdIJHgb8BBMLbO1V/7VHPZxWiX6wAPgx0FHgy1A5u1Bmeykd8FF7HqUXNUwe//fVGu2KyIiH7oMhoKaj5oIvj1EV21GG71IyYnvzY0jIypDJZSk3IgejedCKajncV70GNh7GlbjHXPJNXKzGvHopi
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: 419c9ba6-4462-4cb6-1c1a-08d5e0b0c460
+x-microsoft-antispam: UriScan:;BCL:0;PCL:0;RULEID:(7020095)(4652040)(8989117)(5600053)(711020)(4534165)(4627221)(201703031133081)(201702281549075)(8990107)(2017052603328)(7153060)(7193020);SRVR:YQBPR0101MB1618;
+x-ms-traffictypediagnostic: YQBPR0101MB1618:
+x-microsoft-antispam-prvs: <YQBPR0101MB16184A068281C274EE185AC8F8420@YQBPR0101MB1618.CANPRD01.PROD.OUTLOOK.COM>
+x-exchange-antispam-report-test: UriScan:(61388531626910)(62403747172241)(269995582827781)(63203998231016)(231433314529491)(157189615257929);
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0;PCL:0;RULEID:(8211001083)(6040522)(2401047)(8121501046)(5005006)(3002001)(10201501046)(93006095)(93001095)(3231254)(944501410)(52105095)(149027)(150027)(6041310)(20161123558120)(20161123562045)(20161123564045)(20161123560045)(201703131423095)(201702281529075)(201702281528075)(20161123555045)(201703061421075)(201703061406153)(6072148)(201708071742011)(7699016);SRVR:YQBPR0101MB1618;BCL:0;PCL:0;RULEID:;SRVR:YQBPR0101MB1618;
+x-forefront-prvs: 0722981D2A
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(136003)(346002)(366004)(396003)(39860400002)(376002)(199004)(189003)(8936002)(5140100006)(33656002)(66066001)(53936002)(76176011)(86362001)(2900100001)(2201001)(63730200002)(10126004)(18926415007)(4326008)(229853002)(345774005)(25786009)(7696005)(97736004)(6306002)(236005)(478600001)(9686003)(6246003)(55016002)(74482002)(54896002)(106356001)(733005)(39060400002)(19627405001)(81166006)(74316002)(2906002)(81156014)(6436002)(6606003)(476003)(26005)(99286004)(446003)(5250100002)(7736002)(105004)(2501003)(226693001)(105586002)(486006)(110136005)(786003)(316002)(68736007)(256004)(53546011)(186003)(14444005)(6506007)(6116002)(14454004)(102836004)(606006)(5660300001)(16799955002)(11346002)(3846002);DIR:OUT;SFP:1101;SCL:1;SRVR:YQBPR0101MB1618;H:YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: edu.uwaterloo.ca does not
+ designate permitted sender hosts)
+x-microsoft-antispam-message-info: cMuPVKYeh1byWSHq1WtOeNCECdDOenX6X7CCeSEd0kDZmj567sO0cBhUsrVoLRZEU/0qDiBlCtYmm32K63RDz+OXG9QGnoLONzGN8TohMbLTmRM+tJ+f3ZMbGLeD9EqsTGxbcfx4N3x6Lfel/6HLhJ8hjtvhoB2XOU1DERiKkrzzKswqqUSxqD6vtYcRLKkA5f2RKn3i1TR5aSo5ZrMBKPsi6y2xPrWfLYJzNzeBguv7LP380VKyF1pKaO+E04UEJyx/cCVhoRdEcc6xL5K2TgxSuET7BpHpmMfDHnAkvABO5MWbV8Sitijd0iy0JoN6jnfpx6lowZB4X12VscuNuhl57ZlZGshRzvw7fIv9WcE=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: multipart/alternative;
+	boundary="_000_YQBPR0101MB174515E513A8C8A0025BA4B5F8420YQBPR0101MB1745_"
+MIME-Version: 1.0
+X-OriginatorOrg: edu.uwaterloo.ca
+X-MS-Exchange-CrossTenant-Network-Message-Id: 419c9ba6-4462-4cb6-1c1a-08d5e0b0c460
+X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Jul 2018 06:46:55.5651
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: c39156be-1285-4597-845f-d34864ee6998
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: YQBPR0101MB1618
+
+--_000_YQBPR0101MB174515E513A8C8A0025BA4B5F8420YQBPR0101MB1745_
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+TEST
+
+________________________________
+From: RS Rewards <RSRewards=3Dlists.uwaterloo.ca@mail195.suw101.mcdlv.net> =
+on behalf of RS Rewards <RSRewards@lists.uwaterloo.ca>
+Sent: Thursday, May 31, 2018 2:43:00 PM
+To: k35huang@uwaterloo.ca
+Subject: Tell us how you like to shop!
+
+Answer a short survey for a chance to WIN 1 of 4 $50 Retail Services gift c=
+ards!
+
+View this email in your browser<https://mailchi.mp/lists/tell-us-how-you-li=
+ke-to-shop?e=3De16ce7215a>
+
+
+[https://gallery.mailchimp.com/1f13933b75f72786848dc0493/images/e42f2017-24=
+80-4063-a802-bdfe4d7bf186.jpg]
+
+
+Hi, Warriors!
+
+The University of Waterloo is hoping to learn a little bit more about you=
+=85 the students! To do this, we are conducting a short 3 minute survey.
+
+As your feedback is very important, those who participate in the survey wil=
+l be entered into a draw to receive one of 4 (four) $50 gift cards for use =
+at any of the Retail Services locations on campus. This includes the Waterl=
+oo Store, the Book Store, Media.Doc, Campus Tech, and Write Stuff.
+
+Click HERE<https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b7=
+5f72786848dc0493&id=3Ded527bfa2e&e=3De16ce7215a> to access our short survey=
+.
+
+We are hoping you have a few minutes to help the Retail Services department=
+ better understand their customers so that they can improve the experience =
+at the on-campus retail locations. Your answers are very important to Retai=
+l Services, so we appreciate your thoughtful and honest responses.
+
+For more information about this study, please continue reading.
+
+This study is being conducted by a company called The Build on behalf of Re=
+tail Services. All of the information that you provide in this survey will =
+remain confidential and will only be shared in a summarized form. This mean=
+s that no individual can be identified when the results are shared with Ret=
+ail Services. Participation is both confidential and voluntary, so you may =
+decline to complete any question if you wish and still enter yourself into =
+the draw at the end of the survey.
+
+Additional Information Required:
+To enter the draw, your name and UWaterloo email address will be requested =
+upon completion of the survey. This information will remain confidential an=
+d will not be linked with any of your survey answers. Your information is o=
+nly being collected so that we can enter you into the draw, and contact you=
+ if you have won one of the five gift cards.  Your contact information will=
+ be destroyed immediately following the study.
+
+Rules:
+The winners will be selected in a random draw from eligible entries on June=
+ 30th, 2018. The odds of winning a gift card will solely depend on how many=
+ students actually participate in the survey. Please note that in order to =
+win one of the four $50 gift cards, the selected entrants must correctly an=
+swer a time-limited skill-testing mathematical question.
+
+In order to ensure there is a balanced cross-section of students at the Uni=
+versity of Waterloo, not all students may be eligible to provide their feed=
+back through the survey if certain quotas have already been met. If denied =
+entry into the survey, you will still be eligible to enter yourself into th=
+e draw.
+
+Questions:
+Jaime Philip
+Business Development Officer, Retail Services
+jaime.philip@uwaterloo.ca<mailto:jaime.philip@uwaterloo.ca?subject=3DStuden=
+t%20Segmentation%20Survey>
+
+________________________________
+
+Check your available Rewards Dollars at any Retail Services location!
+If you have earned 500 points by May 1, 2018, the points will have been con=
+verted to RS Student Rewards Dollars and can be redeemed on your next purch=
+ase.
+Check your available Reward Dollars at any Retail Services location<https:/=
+/uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b75f72786848dc0493&i=
+d=3D69ea48d82d&e=3De16ce7215a>.
+
+We thank you for your membership in the Retail Services Student Rewards Pro=
+gram and for shopping at our Retail Services stores across campus. Your com=
+ments and questions are always welcome. Please contact us any time at rsrew=
+ards@lists.uwaterloo.ca<mailto:rsrewards@lists.uwaterloo.ca>
+
+
+[https://cdn-images.mailchimp.com/icons/social-block-v2/color-twitter-48.pn=
+g]<https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b75f727868=
+48dc0493&id=3D4aebfedf03&e=3De16ce7215a>
+
+
+[https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.p=
+ng]<https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b75f72786=
+848dc0493&id=3Da3f4b53062&e=3De16ce7215a>
+
+
+[https://cdn-images.mailchimp.com/icons/social-block-v2/color-link-48.png]<=
+https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b75f72786848d=
+c0493&id=3Dab6044856e&e=3De16ce7215a>
+
+
+
+
+
+
+
+
+Copyright =A9 2018 University of Waterloo Retail Services, All rights reser=
+ved.
+University of Waterloo Retail Services rewards program
+
+Our mailing address is:
+University of Waterloo Retail Services
+200 University Ave West
+Waterloo, On N2L 3G1
+Canada
+
+Add us to your address book<//uwaterloo.us11.list-manage.com/vcard?u=3D1f13=
+933b75f72786848dc0493&id=3D04c4ab1414>
+
+
+Want to change how you receive these emails?
+You can update your preferences<https://uwaterloo.us11.list-manage.com/prof=
+ile?u=3D1f13933b75f72786848dc0493&id=3D04c4ab1414&e=3De16ce7215a> or unsubs=
+cribe from this list<https://uwaterloo.us11.list-manage.com/unsubscribe?u=
+=3D1f13933b75f72786848dc0493&id=3D04c4ab1414&e=3De16ce7215a&c=3Dcf5060158c>
+
+
+
+
+
+
+
+--_000_YQBPR0101MB174515E513A8C8A0025BA4B5F8420YQBPR0101MB1745_
+Content-Type: text/html; charset="Windows-1252"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DWindows-1=
+252">
+<style type=3D"text/css" style=3D"display:none;"><!-- P {margin-top:0;margi=
+n-bottom:0;} --></style>
+</head>
+<body dir=3D"ltr">
+<div id=3D"divtagdefaultwrapper" style=3D"font-size:12pt;color:#000000;font=
+-family:Calibri,Helvetica,sans-serif;" dir=3D"ltr">
+<p style=3D"margin-top:0;margin-bottom:0">TEST</p>
+</div>
+<hr style=3D"display:inline-block;width:98%" tabindex=3D"-1">
+<div id=3D"divRplyFwdMsg" dir=3D"ltr"><font face=3D"Calibri, sans-serif" st=
+yle=3D"font-size:11pt" color=3D"#000000"><b>From:</b> RS Rewards &lt;RSRewa=
+rds=3Dlists.uwaterloo.ca@mail195.suw101.mcdlv.net&gt; on behalf of RS Rewar=
+ds &lt;RSRewards@lists.uwaterloo.ca&gt;<br>
+<b>Sent:</b> Thursday, May 31, 2018 2:43:00 PM<br>
+<b>To:</b> k35huang@uwaterloo.ca<br>
+<b>Subject:</b> Tell us how you like to shop!&nbsp;</font>
+<div>&nbsp;</div>
+</div>
+<meta content=3D"text/html; charset=3Dutf-8">
+<meta content=3D"IE=3Dedge">
+<meta name=3D"x_viewport" content=3D"width=3Ddevice-width, initial-scale=3D=
+1">
+<style type=3D"text/css">
+<!--
+p
+	{margin:10px 0;
+	padding:0}
+table
+	{border-collapse:collapse}
+h1, h2, h3, h4, h5, h6
+	{display:block;
+	margin:0;
+	padding:0}
+img, a img
+	{border:0;
+	height:auto;
+	outline:none;
+	text-decoration:none}
+body, #x_bodyTable, #x_bodyCell
+	{height:100%;
+	margin:0;
+	padding:0;
+	width:100%}
+.x_mcnPreviewText
+	{display:none!important}
+#x_outlook a
+	{padding:0}
+img
+	{}
+table
+	{}
+.x_ReadMsgBody
+	{width:100%}
+.x_ExternalClass
+	{width:100%}
+p, a, li, td, blockquote
+	{}
+p, a, li, td, body, table, blockquote
+	{}
+.x_ExternalClass, .x_ExternalClass p, .x_ExternalClass td, .x_ExternalClass=
+ div, .x_ExternalClass span, .x_ExternalClass font
+	{line-height:100%}
+ax_[x-apple-data-detectors]
+	{color:inherit!important;
+	text-decoration:none!important;
+	font-size:inherit!important;
+	font-family:inherit!important;
+	font-weight:inherit!important;
+	line-height:inherit!important}
+#x_bodyCell
+	{padding:10px}
+.x_templateContainer
+	{max-width:600px!important}
+a.x_mcnButton
+	{display:block}
+.x_mcnImage, .x_mcnRetinaImage
+	{vertical-align:bottom}
+.x_mcnTextContent
+	{word-break:break-word}
+.x_mcnTextContent img
+	{height:auto!important}
+.x_mcnDividerBlock
+	{table-layout:fixed!important}
+body, #x_bodyTable
+	{background-color:#FAFAFA}
+#x_bodyCell
+	{border-top:0}
+.x_templateContainer
+	{border:0}
+h1
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:26px;
+	font-style:normal;
+	font-weight:bold;
+	line-height:125%;
+	letter-spacing:normal;
+	text-align:left}
+h2
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:22px;
+	font-style:normal;
+	font-weight:bold;
+	line-height:125%;
+	letter-spacing:normal;
+	text-align:left}
+h3
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:20px;
+	font-style:normal;
+	font-weight:bold;
+	line-height:125%;
+	letter-spacing:normal;
+	text-align:left}
+h4
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:18px;
+	font-style:normal;
+	font-weight:bold;
+	line-height:125%;
+	letter-spacing:normal;
+	text-align:left}
+#x_templatePreheader
+	{background-color:#FAFAFA;
+	background-image:none;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:cover;
+	border-top:0;
+	border-bottom:0;
+	padding-top:9px;
+	padding-bottom:9px}
+#x_templatePreheader .x_mcnTextContent, #x_templatePreheader .x_mcnTextCont=
+ent p
+	{color:#656565;
+	font-family:Helvetica;
+	font-size:12px;
+	line-height:150%;
+	text-align:left}
+#x_templatePreheader .x_mcnTextContent a, #x_templatePreheader .x_mcnTextCo=
+ntent p a
+	{color:#656565;
+	font-weight:normal;
+	text-decoration:underline}
+#x_templateHeader
+	{background-color:#FFFFFF;
+	background-image:none;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:cover;
+	border-top:0;
+	border-bottom:0;
+	padding-top:9px;
+	padding-bottom:0}
+#x_templateHeader .x_mcnTextContent, #x_templateHeader .x_mcnTextContent p
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:16px;
+	line-height:150%;
+	text-align:left}
+#x_templateHeader .x_mcnTextContent a, #x_templateHeader .x_mcnTextContent =
+p a
+	{color:#2BAADF;
+	font-weight:normal;
+	text-decoration:underline}
+#x_templateBody
+	{background-color:#FFFFFF;
+	background-image:none;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:cover;
+	border-top:0;
+	border-bottom:2px solid #EAEAEA;
+	padding-top:0;
+	padding-bottom:9px}
+#x_templateBody .x_mcnTextContent, #x_templateBody .x_mcnTextContent p
+	{color:#202020;
+	font-family:Helvetica;
+	font-size:16px;
+	line-height:150%;
+	text-align:left}
+#x_templateBody .x_mcnTextContent a, #x_templateBody .x_mcnTextContent p a
+	{color:#2BAADF;
+	font-weight:normal;
+	text-decoration:underline}
+#x_templateFooter
+	{background-color:#FAFAFA;
+	background-image:none;
+	background-repeat:no-repeat;
+	background-position:center;
+	background-size:cover;
+	border-top:0;
+	border-bottom:0;
+	padding-top:9px;
+	padding-bottom:9px}
+#x_templateFooter .x_mcnTextContent, #x_templateFooter .x_mcnTextContent p
+	{color:#656565;
+	font-family:Helvetica;
+	font-size:12px;
+	line-height:150%;
+	text-align:center}
+#x_templateFooter .x_mcnTextContent a, #x_templateFooter .x_mcnTextContent =
+p a
+	{color:#656565;
+	font-weight:normal;
+	text-decoration:underline}
+-->
+</style>
+<div style=3D"height:100%; margin:0; padding:0; width:100%; background-colo=
+r:#FAFAFA">
+<span class=3D"x_mcnPreviewText" style=3D"display:none; font-size:0px; line=
+-height:0px; max-height:0px; max-width:0px; overflow:hidden; visibility:hid=
+den">Answer a short survey for a chance to WIN 1 of 4 $50 Retail Services g=
+ift cards!</span>
+<center>
+<table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" he=
+ight=3D"100%" width=3D"100%" id=3D"x_bodyTable" style=3D"border-collapse:co=
+llapse; height:100%; margin:0; padding:0; width:100%; background-color:#FAF=
+AFA">
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"top" id=3D"x_bodyCell" style=3D"height:100%;=
+ margin:0; padding:10px; width:100%; border-top:0">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_templateContainer" style=3D"border-collapse:collapse; border:0; max-=
+width:600px!important">
+<tbody>
+<tr>
+<td valign=3D"top" id=3D"x_templatePreheader" style=3D"background:#FAFAFA n=
+one no-repeat center/cover; background-color:#FAFAFA; background-image:none=
+; background-repeat:no-repeat; background-position:center; background-size:=
+cover; border-top:0; border-bottom:0; padding-top:9px; padding-bottom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnTextBlock" style=3D"min-width:100%; border-collapse:collapse">
+<tbody class=3D"x_mcnTextBlockOuter">
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextBlockInner" style=3D"padding-top:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"100%" class=3D"x_mcnTextContentContainer" style=3D"max-width:390px; bo=
+rder-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextContent" style=3D"padding-top:0; paddi=
+ng-left:18px; padding-bottom:9px; padding-right:18px; word-break:break-word=
+; color:#656565; font-family:Helvetica; font-size:12px; line-height:150%; t=
+ext-align:left">
+</td>
+</tr>
+</tbody>
+</table>
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"100%" class=3D"x_mcnTextContentContainer" style=3D"max-width:210px; bo=
+rder-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextContent" style=3D"padding-top:0; paddi=
+ng-left:18px; padding-bottom:9px; padding-right:18px; word-break:break-word=
+; color:#656565; font-family:Helvetica; font-size:12px; line-height:150%; t=
+ext-align:left">
+<a href=3D"https://mailchi.mp/lists/tell-us-how-you-like-to-shop?e=3De16ce7=
+215a" target=3D"_blank" style=3D"color:#656565; font-weight:normal; text-de=
+coration:underline">View this email in your browser</a>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td valign=3D"top" id=3D"x_templateHeader" style=3D"background:#FFFFFF none=
+ no-repeat center/cover; background-color:#FFFFFF; background-image:none; b=
+ackground-repeat:no-repeat; background-position:center; background-size:cov=
+er; border-top:0; border-bottom:0; padding-top:9px; padding-bottom:0">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnImageBlock" style=3D"min-width:100%; border-collapse:collapse">
+<tbody class=3D"x_mcnImageBlockOuter">
+<tr>
+<td valign=3D"top" class=3D"x_mcnImageBlockInner" style=3D"padding:9px">
+<table align=3D"left" width=3D"100%" border=3D"0" cellpadding=3D"0" cellspa=
+cing=3D"0" class=3D"x_mcnImageContentContainer" style=3D"min-width:100%; bo=
+rder-collapse:collapse">
+<tbody>
+<tr>
+<td class=3D"x_mcnImageContent" valign=3D"top" style=3D"padding-right:9px; =
+padding-left:9px; padding-top:0; padding-bottom:0; text-align:center">
+<img align=3D"center" alt=3D"" width=3D"550" class=3D"x_mcnImage" style=3D"=
+max-width:550px; padding-bottom:0; display:inline!important; vertical-align=
+:bottom; border:0; height:auto; outline:none; text-decoration:none" src=3D"=
+https://gallery.mailchimp.com/1f13933b75f72786848dc0493/images/e42f2017-248=
+0-4063-a802-bdfe4d7bf186.jpg">
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td valign=3D"top" id=3D"x_templateBody" style=3D"background:#FFFFFF none n=
+o-repeat center/cover; background-color:#FFFFFF; background-image:none; bac=
+kground-repeat:no-repeat; background-position:center; background-size:cover=
+; border-top:0; border-bottom:2px solid #EAEAEA; padding-top:0; padding-bot=
+tom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnTextBlock" style=3D"min-width:100%; border-collapse:collapse">
+<tbody class=3D"x_mcnTextBlockOuter">
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextBlockInner" style=3D"padding-top:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"100%" class=3D"x_mcnTextContentContainer" style=3D"max-width:100%; min=
+-width:100%; border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextContent" style=3D"padding-top:0; paddi=
+ng-right:18px; padding-bottom:9px; padding-left:18px; word-break:break-word=
+; color:#202020; font-family:Helvetica; font-size:16px; line-height:150%; t=
+ext-align:left">
+<span style=3D"font-size:12px"><strong>Hi, Warriors!</strong><br>
+&nbsp;<br>
+The University of Waterloo is hoping to learn a little bit more about you=
+=85 the students!&nbsp;To do this, we are conducting a short 3 minute surve=
+y.&nbsp;<br>
+&nbsp;<br>
+<span style=3D"color:#800080"><strong>As your feedback is very important, t=
+hose who participate in the survey will be entered into a draw to receive o=
+ne of 4 (four) $50 gift cards for use at any of the Retail Services locatio=
+ns on campus.&nbsp;</strong></span>This
+ includes the Waterloo Store, the Book Store, Media.Doc, Campus Tech, and W=
+rite Stuff.<br>
+&nbsp;<br>
+<strong><span style=3D"color:#FF0000">Click </span><a href=3D"https://uwate=
+rloo.us11.list-manage.com/track/click?u=3D1f13933b75f72786848dc0493&amp;id=
+=3Ded527bfa2e&amp;e=3De16ce7215a" target=3D"_blank" style=3D"color:#2BAADF;=
+ font-weight:normal; text-decoration:underline"><span style=3D"color:#FF000=
+0"><u>HERE</u></span></a><span style=3D"color:#FF0000">
+ to access our short survey.</span></strong><br>
+<br>
+We are hoping you have a few minutes to help the Retail Services department=
+ better understand their customers so that they can improve the experience =
+at the on-campus retail locations.&nbsp;Your answers are very important to =
+Retail Services, so we appreciate your
+ thoughtful and honest responses.<br>
+&nbsp;<br>
+<em>For more information about this study, please continue reading.</em><br=
+>
+<br>
+This study is being conducted by a company called <em>The Build</em> on beh=
+alf of Retail Services. All of the information that you provide in this sur=
+vey will remain confidential and will only be shared in a summarized form. =
+This means that no individual can
+ be identified when the results are shared with Retail Services. Participat=
+ion is both confidential and voluntary, so you may decline to complete any =
+question if you wish and still enter yourself into the draw at the end of t=
+he survey.&nbsp;<br>
+&nbsp;<br>
+<strong><u>Additional Information Required:</u></strong><br>
+To enter the draw, your name and UWaterloo email address will be requested =
+upon completion of the survey. This information will remain confidential an=
+d will not be linked with any of your survey answers. Your information is o=
+nly being collected so that we can
+ enter you into the draw, and contact you if you have won one of the five g=
+ift cards.&nbsp; Your contact information will be destroyed immediately fol=
+lowing the study.&nbsp;<br>
+&nbsp;<br>
+<strong><u>Rules:</u></strong><br>
+The winners will be selected in a random draw from eligible entries on June=
+ 30<sup>th</sup>, 2018. The odds of winning a gift card will solely depend =
+on how many students actually participate in the survey. Please note that i=
+n order to win one of the four $50
+ gift cards, the selected entrants must correctly answer a time-limited ski=
+ll-testing mathematical question.&nbsp;<br>
+&nbsp;<br>
+In order to ensure there is a balanced cross-section of students at the Uni=
+versity of Waterloo, not all students may be eligible to provide their feed=
+back through the survey if certain quotas have already been met. If denied =
+entry into the survey, you will
+ still be eligible to enter yourself into the draw.<br>
+&nbsp;<br>
+<strong><u>Questions:</u></strong><br>
+Jaime Philip<br>
+Business Development Officer, Retail Services<br>
+<a href=3D"mailto:jaime.philip@uwaterloo.ca?subject=3DStudent%20Segmentatio=
+n%20Survey" target=3D"_blank" style=3D"color:#2BAADF; font-weight:normal; t=
+ext-decoration:underline">jaime.philip@uwaterloo.ca</a><br>
+&nbsp;</span>
+<hr>
+<br>
+<span style=3D"font-size:12px"><strong>Check your available Rewards Dollars=
+ at any Retail Services location!&nbsp;</strong><br>
+If you have earned 500 points by May 1, 2018, the points will have been con=
+verted to RS Student Rewards Dollars and can be redeemed on your next purch=
+ase.&nbsp;&nbsp;<br>
+Check your available Reward Dollars at any&nbsp;<a href=3D"https://uwaterlo=
+o.us11.list-manage.com/track/click?u=3D1f13933b75f72786848dc0493&amp;id=3D6=
+9ea48d82d&amp;e=3De16ce7215a" target=3D"_blank" style=3D"color:#2BAADF; fon=
+t-weight:normal; text-decoration:underline">Retail Services
+ location</a>.&nbsp;<br>
+<br>
+We thank you for your membership in the Retail Services Student Rewards Pro=
+gram and for shopping at our Retail Services stores across campus.&nbsp;You=
+r comments and questions are always welcome. Please contact us any time at&=
+nbsp;<a href=3D"mailto:rsrewards@lists.uwaterloo.ca" style=3D"color:#2BAADF=
+; font-weight:normal; text-decoration:underline">rsrewards@lists.uwaterloo.=
+ca</a></span>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td valign=3D"top" id=3D"x_templateFooter" style=3D"background:#FAFAFA none=
+ no-repeat center/cover; background-color:#FAFAFA; background-image:none; b=
+ackground-repeat:no-repeat; background-position:center; background-size:cov=
+er; border-top:0; border-bottom:0; padding-top:9px; padding-bottom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowBlock" style=3D"min-width:100%; border-collapse:collapse">
+<tbody class=3D"x_mcnFollowBlockOuter">
+<tr>
+<td align=3D"center" valign=3D"top" class=3D"x_mcnFollowBlockInner" style=
+=3D"padding:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowContentContainer" style=3D"min-width:100%; border-collapse:=
+collapse">
+<tbody>
+<tr>
+<td align=3D"center" style=3D"padding-left:9px; padding-right:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowContent" style=3D"min-width:100%; border-collapse:collapse"=
+>
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"top" style=3D"padding-top:9px; padding-right=
+:9px; padding-left:9px">
+<table align=3D"center" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" st=
+yle=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"top" style=3D"">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" styl=
+e=3D"display:inline; border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnFollowContentItemContainer" style=3D"paddi=
+ng-right:10px; padding-bottom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowContentItem" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"left" valign=3D"middle" style=3D"padding-top:5px; padding-righ=
+t:10px; padding-bottom:5px; padding-left:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"middle" width=3D"24" class=3D"x_mcnFollowIco=
+nContent" style=3D"">
+<a href=3D"https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b7=
+5f72786848dc0493&amp;id=3D4aebfedf03&amp;e=3De16ce7215a" target=3D"_blank" =
+style=3D""><img height=3D"24" width=3D"24" class=3D"" style=3D"display:bloc=
+k; border:0; height:auto; outline:none; text-decoration:none" src=3D"https:=
+//cdn-images.mailchimp.com/icons/social-block-v2/color-twitter-48.png"></a>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" styl=
+e=3D"display:inline; border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnFollowContentItemContainer" style=3D"paddi=
+ng-right:10px; padding-bottom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowContentItem" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"left" valign=3D"middle" style=3D"padding-top:5px; padding-righ=
+t:10px; padding-bottom:5px; padding-left:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"middle" width=3D"24" class=3D"x_mcnFollowIco=
+nContent" style=3D"">
+<a href=3D"https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b7=
+5f72786848dc0493&amp;id=3Da3f4b53062&amp;e=3De16ce7215a" target=3D"_blank" =
+style=3D""><img height=3D"24" width=3D"24" class=3D"" style=3D"display:bloc=
+k; border:0; height:auto; outline:none; text-decoration:none" src=3D"https:=
+//cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png"></a=
+>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" styl=
+e=3D"display:inline; border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnFollowContentItemContainer" style=3D"paddi=
+ng-right:0; padding-bottom:9px">
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnFollowContentItem" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"left" valign=3D"middle" style=3D"padding-top:5px; padding-righ=
+t:10px; padding-bottom:5px; padding-left:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"" style=3D"border-collapse:collapse">
+<tbody>
+<tr>
+<td align=3D"center" valign=3D"middle" width=3D"24" class=3D"x_mcnFollowIco=
+nContent" style=3D"">
+<a href=3D"https://uwaterloo.us11.list-manage.com/track/click?u=3D1f13933b7=
+5f72786848dc0493&amp;id=3Dab6044856e&amp;e=3De16ce7215a" target=3D"_blank" =
+style=3D""><img height=3D"24" width=3D"24" class=3D"" style=3D"display:bloc=
+k; border:0; height:auto; outline:none; text-decoration:none" src=3D"https:=
+//cdn-images.mailchimp.com/icons/social-block-v2/color-link-48.png"></a>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnDividerBlock" style=3D"min-width:100%; border-collapse:collapse; =
+table-layout:fixed!important">
+<tbody class=3D"x_mcnDividerBlockOuter">
+<tr>
+<td class=3D"x_mcnDividerBlockInner" style=3D"min-width:100%; padding:10px =
+18px 25px">
+<table class=3D"x_mcnDividerContent" border=3D"0" cellpadding=3D"0" cellspa=
+cing=3D"0" width=3D"100%" style=3D"min-width:100%; border-top:2px solid #EE=
+EEEE; border-collapse:collapse">
+<tbody>
+<tr>
+<td style=3D""><span></span></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table border=3D"0" cellpadding=3D"0" cellspacing=3D"0" width=3D"100%" clas=
+s=3D"x_mcnTextBlock" style=3D"min-width:100%; border-collapse:collapse">
+<tbody class=3D"x_mcnTextBlockOuter">
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextBlockInner" style=3D"padding-top:9px">
+<table align=3D"left" border=3D"0" cellpadding=3D"0" cellspacing=3D"0" widt=
+h=3D"100%" class=3D"x_mcnTextContentContainer" style=3D"max-width:100%; min=
+-width:100%; border-collapse:collapse">
+<tbody>
+<tr>
+<td valign=3D"top" class=3D"x_mcnTextContent" style=3D"padding-top:0; paddi=
+ng-right:18px; padding-bottom:9px; padding-left:18px; word-break:break-word=
+; color:#656565; font-family:Helvetica; font-size:12px; line-height:150%; t=
+ext-align:center">
+<em>Copyright =A9 2018 University of Waterloo Retail Services, All rights r=
+eserved.</em>
+<br>
+University of Waterloo Retail Services rewards program <br>
+<br>
+<strong>Our mailing address is:</strong> <br>
+<div class=3D"x_vcard"><span class=3D"x_org x_fn">University of Waterloo Re=
+tail Services</span>
+<div class=3D"x_adr">
+<div class=3D"x_street-address">200 University Ave West</div>
+<span class=3D"x_locality">Waterloo</span>, <span class=3D"x_region">On</sp=
+an> <span class=3D"x_postal-code">
+N2L 3G1</span>
+<div class=3D"x_country-name">Canada</div>
+</div>
+<br>
+<a href=3D"//uwaterloo.us11.list-manage.com/vcard?u=3D1f13933b75f72786848dc=
+0493&amp;id=3D04c4ab1414" class=3D"x_hcard-download">Add us to your address=
+ book</a></div>
+<br>
+<br>
+Want to change how you receive these emails?<br>
+You can <a href=3D"https://uwaterloo.us11.list-manage.com/profile?u=3D1f139=
+33b75f72786848dc0493&amp;id=3D04c4ab1414&amp;e=3De16ce7215a" style=3D"color=
+:#656565; font-weight:normal; text-decoration:underline">
+update your preferences</a> or <a href=3D"https://uwaterloo.us11.list-manag=
+e.com/unsubscribe?u=3D1f13933b75f72786848dc0493&amp;id=3D04c4ab1414&amp;e=
+=3De16ce7215a&amp;c=3Dcf5060158c" style=3D"color:#656565; font-weight:norma=
+l; text-decoration:underline">
+unsubscribe from this list</a> <br>
+<br>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+<img height=3D"1" width=3D"1" src=3D"https://uwaterloo.us11.list-manage.com=
+/track/open.php?u=3D1f13933b75f72786848dc0493&amp;id=3Dcf5060158c&amp;e=3De=
+16ce7215a">
+</div>
+</body>
+</html>
+
+--_000_YQBPR0101MB174515E513A8C8A0025BA4B5F8420YQBPR0101MB1745_--

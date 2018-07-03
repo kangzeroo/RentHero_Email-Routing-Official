@@ -1,0 +1,95 @@
+Return-Path: <k35huang@edu.uwaterloo.ca>
+Received: from CAN01-TO1-obe.outbound.protection.outlook.com (mail-eopbgr670048.outbound.protection.outlook.com [40.107.67.48])
+ by inbound-smtp.us-east-1.amazonaws.com with SMTP id 6ocm6en3cbtgkb8ckl6a1e28md90lmvi12900fg1
+ for heffe@myrenthelper.com;
+ Tue, 03 Jul 2018 06:44:46 +0000 (UTC)
+X-SES-Spam-Verdict: PASS
+X-SES-Virus-Verdict: PASS
+Received-SPF: pass (spfCheck: domain of edu.uwaterloo.ca designates 40.107.67.48 as permitted sender) client-ip=40.107.67.48; envelope-from=k35huang@edu.uwaterloo.ca; helo=mail-eopbgr670048.outbound.protection.outlook.com;
+Authentication-Results: amazonses.com;
+ spf=pass (spfCheck: domain of edu.uwaterloo.ca designates 40.107.67.48 as permitted sender) client-ip=40.107.67.48; envelope-from=k35huang@edu.uwaterloo.ca; helo=mail-eopbgr670048.outbound.protection.outlook.com;
+ dkim=pass header.i=@eduuwaterloo.onmicrosoft.com;
+X-SES-RECEIPT: AEFBQUFBQUFBQUFIb2lTV1dEME5ndjJ6bG16eVZ0anBKL1R5MzRGWjhuVlNVcVJhNWpXLzUyNFQwV2NrWmw2T3NydDNZL1NtcGRMbmliNENGdGZKU010Y1ppQ0JKcTlIMkpRY2tJdVFjOGh5U3IwY3h1RWNVZDZvNjhEd2dCRFM1U0VVeDhrMWtXM0IzQUsrRVNkdXF3c2d2bmt1ZVU5a1A1TjhWb1hGR2hwNjNwME9DWisxSllxZEF2WmdxWUhOaW03c1pyMTlSNTJBeFVMa1ZaQlROaU4zcHFIekQrV3VlaG1aL3plRys2RlB0QVdvbnBpcU1KeHpCcVgwTFpPcUdvbHBUT216RkpTdFpmN0V4NHdBYmNRSnAwMnUrbmx4Znp4TDM0ZXdPdjZKNmVmQVBRZzVSZXc9PQ==
+X-SES-DKIM-SIGNATURE: a=rsa-sha256; q=dns/txt; b=dThvm8PI4c7veuNX/4JZip52TRAs6PHez0+S2lyBawrkGUvGWuXeTLAvYb5M1AyA6uevUXXh2ATUq7EyZXowCl+hLmrtXGghdVytzH5WmhcDO9nqZvvovl2vxHpgoR2glw37z32xZ008En4tXcY+PDJz3b1Zdl6LGS89fGuc928=; c=relaxed/simple; s=ug7nbtf4gccmlpwj322ax3p6ow6yfsug; d=amazonses.com; t=1530600287; v=1; bh=d0XViXtvjfnYYi/dq6+R8Y+N+U6RUr+PDrHAt+pnwyU=; h=From:To:Cc:Bcc:Subject:Date:Message-ID:MIME-Version:Content-Type:X-SES-RECEIPT;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=eduuwaterloo.onmicrosoft.com; s=selector1-edu-uwaterloo-ca;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=d0XViXtvjfnYYi/dq6+R8Y+N+U6RUr+PDrHAt+pnwyU=;
+ b=T9K8HGfezze3M1+/twa5fNpBtzJbdTQ0BZJHo8pa9ui2tTwgAvI7zDZzOWyMbPvCYDFDcm3gFXJ+nQkSSvgI8ibb5Tf5EQ20+7HAhyWgwuSJnjdHhREhkw7JHn3X20mJXwhn1BbQvw/4447SjCTJJsup3PkWbjxL1tguXWtmiVU=
+Received: from YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM (52.132.71.13) by
+ YQBPR0101MB1362.CANPRD01.PROD.OUTLOOK.COM (52.132.68.147) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.930.18; Tue, 3 Jul 2018 06:44:44 +0000
+Received: from YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2d85:c578:3d23:9e10]) by YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM
+ ([fe80::2d85:c578:3d23:9e10%3]) with mapi id 15.20.0930.016; Tue, 3 Jul 2018
+ 06:44:44 +0000
+From: Kangze Huang <k35huang@edu.uwaterloo.ca>
+To: "heffe@myrenthelper.com" <heffe@myrenthelper.com>, "jimmy@renthero.com"
+	<jimmy@renthero.com>
+CC: "kangze@renthero.com" <kangze@renthero.com>
+Subject: HOTMAIL SEND TEST
+Thread-Topic: HOTMAIL SEND TEST
+Thread-Index: AQHUEplSnJjRerWde0eQwc2aExpm+Q==
+Date: Tue, 3 Jul 2018 06:44:44 +0000
+Message-ID: <YQBPR0101MB1745CBCF7415B3070D2AFAA8F8420@YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+authentication-results: spf=none (sender IP is )
+ smtp.mailfrom=k35huang@edu.uwaterloo.ca; 
+x-originating-ip: [208.72.125.2]
+x-ms-publictraffictype: Email
+x-microsoft-exchange-diagnostics: 1;YQBPR0101MB1362;6:isnYB5Md8e2nAgm0cJ3zKZI2Fl2VsZ4YuQL5jguXKuZpmHnZmPUPxKJrZWPGADdi+CMLsIkCeHt6Ucy33VfKD9/fGOe93WvNERpks44uvisrk81mXoX388P1FSpL3CEUWNXKaCxNZzUSAaos2+O3Zjoxza2iDr7uLWw5d8KvAz4xX99tCfx2WhHk8CAlypCD/kQ/5mIJukxY9yocMih8WcfUkHWRG3moVgRAaSfrNEaq1dOCsVD7ZWjXGI+FgGdY1gCHlLJDyZEujg4VzjzAJRGupU7L26ltyMIcYHS2keSAABK79xK3KkpAM87rx6o76Ej1QarRloOJKyb5kMCM7xozP2WZjPd5fvoVUmQOjnI=;5:qHl4sAA/fmIwCtQwxVWbgpZtm9PFGeCq9kugoxvrEgwKY1+gTJ+hIl78uYjKoEO9/ss419iDsWdPURZBHF37QOVKmnLqTirVWSSxzkd3ukvE/btNlF4g4ir4WMBT2k4rmsXNuIhAqxLwfEJVE3F/yCT0EScWGscBRi2FwoKDBf4=;24:qZpVnm3Z65Q4eh6BaynjKrX080K1sfadKe8YXg7bc7c4gjH4G+xvX6P5ziyhqGn6413WVj3Vf6V7S3ZYByrge//SxpT5SCgjMUb0kVWeRLM=;7:Q/oiJurxTNe3cZXKrtl2uyupM6TJeURcrUpG5mLQrDiGvPCR0+vtFvbbPJvOwcQt+5HDzWbq4P1mRzwSzosW+2+rkeRpbnP0Rlv8ZTIsHOobqt9Eg6JTN9WECttEgOTMl3wtpqWvCFgSuDcf5TION8/bpzSGqfeWeqv7sT0Jor4ccT6W8vhytrMRS9ad2/tUNtrK76kXP4fPw2z2K60j7uOFc94/FGRTxL7rMHzVsX+ZgtQuB/MD4cHOEE6apdEz
+x-ms-exchange-antispam-srfa-diagnostics: SOS;
+x-ms-office365-filtering-correlation-id: 99d3b51c-4afc-401b-dc93-08d5e0b0763e
+x-microsoft-antispam: UriScan:;BCL:0;PCL:0;RULEID:(7020095)(4652040)(8989117)(5600053)(711020)(4534165)(4627221)(201703031133081)(201702281549075)(8990107)(2017052603328)(7153060)(7193020);SRVR:YQBPR0101MB1362;
+x-ms-traffictypediagnostic: YQBPR0101MB1362:
+x-microsoft-antispam-prvs: <YQBPR0101MB1362A6FB6226B306BDDF4D4EF8420@YQBPR0101MB1362.CANPRD01.PROD.OUTLOOK.COM>
+x-exchange-antispam-report-test: UriScan:;
+x-ms-exchange-senderadcheck: 1
+x-exchange-antispam-report-cfa-test: BCL:0;PCL:0;RULEID:(8211001083)(6040522)(2401047)(8121501046)(5005006)(10201501046)(3231254)(2017060907117)(944501410)(52105095)(3002001)(93006095)(93001095)(149027)(150027)(6041310)(201703131423095)(201703061421075)(201703161042150)(20161123560045)(20161123562045)(20161123558120)(20161123564045)(6042181)(6072148)(201708071742011)(7699016);SRVR:YQBPR0101MB1362;BCL:0;PCL:0;RULEID:;SRVR:YQBPR0101MB1362;
+x-forefront-prvs: 0722981D2A
+x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(366004)(47550400004)(199004)(189003)(486006)(74482002)(102836004)(105586002)(106356001)(498600001)(45080400002)(186003)(33656002)(4270600006)(39060400002)(26005)(256004)(86362001)(7696005)(3846002)(6116002)(476003)(6506007)(97736004)(2501003)(5250100002)(555874004)(68736007)(14454004)(54896002)(588024002)(6436002)(52230400001)(6606003)(110136005)(558084003)(53936002)(99286004)(66066001)(81156014)(2906002)(8936002)(81166006)(19627405001)(2900100001)(5660300001)(7116003)(8676002)(3480700004)(55016002)(25786009)(7736002)(74316002)(4326008)(9686003)(215093002)(217873001);DIR:OUT;SFP:1101;SCL:1;SRVR:YQBPR0101MB1362;H:YQBPR0101MB1745.CANPRD01.PROD.OUTLOOK.COM;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
+received-spf: None (protection.outlook.com: edu.uwaterloo.ca does not
+ designate permitted sender hosts)
+x-microsoft-antispam-message-info: FKdjTI9vmHY6cBDgFL308/mj2hNquqmJrQAbHRwpsQIgCG5COWqHWoP/MsbtWnN/LpCgiTbkzBruBQYKGbq8bwaSWiRb5xiWhPgyLcbVlR+XBRbr6w3wsqEJas6oray7iy9eCmwQivl7MD6UZ4ITncQX8RvLvT2A7vZO5OBETS6Jmr1TH5BohObUQhRORVkgj5a7oBuFd/WQinrLSmYWsR74UavJPWtwF/40ryBKSM4=
+spamdiagnosticoutput: 1:99
+spamdiagnosticmetadata: NSPM
+Content-Type: multipart/alternative;
+	boundary="_000_YQBPR0101MB1745CBCF7415B3070D2AFAA8F8420YQBPR0101MB1745_"
+MIME-Version: 1.0
+X-OriginatorOrg: edu.uwaterloo.ca
+X-MS-Exchange-CrossTenant-Network-Message-Id: 99d3b51c-4afc-401b-dc93-08d5e0b0763e
+X-MS-Exchange-CrossTenant-originalarrivaltime: 03 Jul 2018 06:44:44.5029
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: c39156be-1285-4597-845f-d34864ee6998
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: YQBPR0101MB1362
+
+--_000_YQBPR0101MB1745CBCF7415B3070D2AFAA8F8420YQBPR0101MB1745_
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+dont mind me
+
+--_000_YQBPR0101MB1745CBCF7415B3070D2AFAA8F8420YQBPR0101MB1745_
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<html>
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Diso-8859-=
+1">
+<style type=3D"text/css" style=3D"display:none;"><!-- P {margin-top:0;margi=
+n-bottom:0;} --></style>
+</head>
+<body dir=3D"ltr">
+<div id=3D"divtagdefaultwrapper" style=3D"font-size:12pt;color:#000000;font=
+-family:Calibri,Helvetica,sans-serif;" dir=3D"ltr">
+dont mind me</div>
+</body>
+</html>
+
+--_000_YQBPR0101MB1745CBCF7415B3070D2AFAA8F8420YQBPR0101MB1745_--

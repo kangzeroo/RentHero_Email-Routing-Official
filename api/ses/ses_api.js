@@ -1,6 +1,6 @@
 const axios = require('axios')
 const AWS = require('aws-sdk')
-const extractionAPI = require('../extraction/extractionAPI')
+const extractionAPI = require('../extraction/extraction_api')
 
 module.exports.forwardToLead = function(email_ref, formattedEmail, proxyEmail){
   console.log(`------ FORWARDING EMAIL TO LEAD ------`)
