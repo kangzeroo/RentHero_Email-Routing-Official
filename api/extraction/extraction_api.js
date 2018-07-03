@@ -195,7 +195,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
       // PART 4: Rank Against Estimate
       // we replace the estimated_channel only if this LEAD_CHANNEL's current_score is higher than estimated_channel.score
       console.log(`${lead_channel.channel_name} scored: ${current_score}`)
-      if (current_score >= estimated_channel.score) {
+      if (current_score > estimated_channel.score) {
         estimated_channel = {
           channel_name: lead_channel.channel_name,
           score: current_score
@@ -234,6 +234,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
     // With those KNOWLEDGE_HISTORY results, we can assume the target ad is the one most recently replied to
     // This method is low confidence because it is easily skewed when a lead is talking to multiple RentHero proxies, or previous target ad estimates were wrong but still saved to KNOWLEDGE_HISTORY
 
+    console.log(`------ GETTING 3 TYPES OF HINTS TO DETERMINE AD_ID ------`)
     const arrayPromises = [
       // KNOWN_AD_URLS
       rdsAPI.fuzzysearch_ad_urls(proxy_email, extractedS3Email)
@@ -262,6 +263,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
     ]
     Promise.all(arrayPromises)
       .then((results) => {
+        console.log(`------ GOT 3 TYPES OF HINTS TO DETERMINE AD_ID ------`)
         /*
           results = [
             // KNOWN_AD_URLS
@@ -290,6 +292,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
             }
           ]
         */
+        console.log(`------ RANKING TOP MATCHES FROM ALL 3 HINT TYPES ------`)
         const topEstimates = []
         // get the best of each guess method
         results[0].unique_matches.filter((u) => {
@@ -304,8 +307,11 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
           topEstimates.push(u)
         })
         const orderedEstimates = topEstimates.sort((a, b) => a.score - b.score)
+        console.log(`Top Matches From Hints`, orderedEstimates)
         // successfully guessed which ad this email is referring to
         if (orderedEstimates && orderedEstimates[0] && orderedEstimates[0].ad_id) {
+          console.log(`------ WE HAVE SUCCESSFULLY GUESSED THE AD_ID OF THIS RECEIVED EMAIL ------`)
+          console.log(`AD_ID: ${orderedEstimates[0].ad_id} with confidence SCORE: ${orderedEstimates[0].score} (lower = better)`)
           const est_ad_id = orderedEstimates[0].ad_id
           return rdsAPI.get_supervision_settings(est_ad_id)
                         .then((settings) => {
@@ -314,21 +320,30 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
                           //  reviewer_emails: [],
                           //  cc_emails: []
                           // }
-                          return Promise.resolve(settings)
+                          const obj = {
+                            found: true,
+                            settings: settings
+                          }
+                          console.log('Returned object with supervision_settings: ', obj)
+                          return Promise.resolve(obj)
                         })
                         .catch((err) => {
                           return Promise.reject(err)
                         })
         } else {
-          // [TODO]: SENTIMENT ANALYSIS as fallback
-          // custom NLP layer that detects if this lead is: ['unknown_ad', 'open_to_suggestions', 'angry']
-          // this is powerful because it lets us customize what the AI does in each wildcard scenerio
-          // the landlord can choose to do things for each scenerio (eg. if the person is angry, the AI will not reply and the landlord should take over)
-          return Promise.resolve({
-             ad_id: 'xxxx-xxxx-xxxx-TEMP-FALLBACK',
+          // could not guess an ad_id
+          // will fallback to sentiment analysis, picking a custom AI to handle it
+          console.log(`------ WE COULD NOT GUESS THE AD_ID OF THE RECEIVED EMAIL ------`)
+          const obj = {
+            found: false,
+            settings: {
+             ad_id: 'UNKNOWN',
              reviewer_emails: [],
              cc_emails: []
-          })
+            }
+          }
+          console.log('Returned object with supervision_settings: ', obj)
+          return Promise.resolve(obj)
         }
       })
       .then((estimated_ad_settings) => {
@@ -338,10 +353,13 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
         //  cc_emails: []
         // }
         console.log(`------ FINISHED DETERMINING WHICH AD_ID IS THE TARGET AD FOR THIS EMAIL ------`)
-        res({
-          ad_id: estimated_ad_settings.data.ad_id,
-          supervision_settings: estimated_ad_settings.data
-        })
+        const obj = {
+          ad_id: estimated_ad_settings.settings.ad_id,
+          found: estimated_ad_settings.found,
+          supervision_settings: estimated_ad_settings.settings
+        }
+        console.log(obj)
+        res(obj)
       })
       .catch((err) => {
         console.log(err)

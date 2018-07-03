@@ -1,6 +1,7 @@
 const rdsAPI = require('../api/rds/rds_api')
 const rerouteEmail = require('../api/proxy/reroute_email')
 const s3API = require('../api/s3/s3_api')
+const dynAPI = require('../api/dyn/dyn_api')
 const extractionAPI = require('../api/extraction/extraction_api')
 
 const headers = {
@@ -79,6 +80,16 @@ module.exports = function(event, context, callback){
   console.log('------ EMAIL PARTICIPANTS ------')
   const participants = extractionAPI.extractParticipants(sesEmail)
   console.log(participants)
+  /*
+    participants = {
+      to: toAddresses,
+      from: fromAddresses,
+      cc: ccAddresses,
+      inReplyTo: inReplyToAddresses,
+      returnPath: returnAddresses,
+      messageID: messageIDAddress
+    }
+  */
   console.log('------ TO RENTHERO PROXY ------')
   const toProxies = participants.to.filter((p) => {
     return p.indexOf(process.env.PROXY_EMAIL) > -1
@@ -136,7 +147,7 @@ module.exports = function(event, context, callback){
         .then((direction) => {
           meta.messageDirection = direction
           if (direction === 'leadToAgent') {
-            console.log('------ HANDLING A LEAD-->AGENT EMAIL ------')
+            console.log('------ HANDLING A LEAD --> AGENT EMAIL ------')
             return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
                         .then((s3Email) => {
                           return extractionAPI.extractEmail(s3Email)
@@ -158,11 +169,45 @@ module.exports = function(event, context, callback){
                                               meta.fromKnownLandlord = results[0].known
                                               meta.emailClient = results[1]
                                               meta.leadChannel = results[2].channel.channel_name
-                                              meta.targetAd = results[3].ad_id
+                                              meta.targetAd = results[3].found ? results[3].ad_id : 'unknown'
                                               meta.supervisionSettings = results[3].supervision_settings
                                               console.log(meta)
-                                              // [TODO]: The actual email rerouting
-                                              return rerouteEmail.fn(meta, extractedS3Email, participants)
+                                              // save the knowledge history of every participant to dynamodb
+                                              return dynAPI.saveKnowledgeHistory(sesEmail, meta, extractedS3Email, participants, proxyEmail)
+                                            })
+                                            .then((data) => {
+                                              console.log('------ SUCCESSFULLY SAVED KNOWLEDGE HISTORY OF PARTICIPANTS ------')
+                                              console.log('------ GRABBING ALL THE ORIGINAL EMAILS OF PARTICIPANTS ------')
+                                              // collect the original_emails to trade in for alias_emails
+                                              const original_emails = []
+                                              participants.to.forEach((to) => {
+                                                original_emails.push(to)
+                                              })
+                                              participants.from.forEach((from) => {
+                                                original_emails.push(from)
+                                              })
+                                              participants.cc.forEach((cc) => {
+                                                original_emails.push(cc)
+                                              })
+                                              participants.returnPath.forEach((returnPath) => {
+                                                original_emails.push(returnPath)
+                                              })
+                                              console.log('Original Emails: ', original_emails)
+                                              // exchange original_emails for alias_emails
+                                              return rdsAPI.grab_alias_emails(original_emails)
+                                            })
+                                            .then((proxyPairs) => {
+                                              console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
+                                              console.log(proxyPairs)
+                                              if (meta.targetAd === 'unknown') {
+                                                // [TODO]: The fallback email rerouting
+                                                console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
+                                                return rerouteEmail.fallback(sesEmail, meta, extractedS3Email, participants, proxyEmail, proxyPairs)
+                                              } else {
+                                                // [TODO]: The actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
+                                                console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
+                                                return rerouteEmail.fn(sesEmail, meta, extractedS3Email, participants, proxyEmail, proxyPairs)
+                                              }
                                             })
                                             .then((data) => {
                                               return Promise.resolve(data)
@@ -182,6 +227,7 @@ module.exports = function(event, context, callback){
             console.log('------ HANDLING AN AGENT-->LEAD EMAIL ------')
             console.log('------ AGENT EMAIL BEING REROUTED TO ORIGINAL RECIPIENTS ------')
             // [TODO]: Forward this email back to all original recipients
+            // should also check supervision_settings before actually sending out to leads
             return Promise.resolve('AGENT TO LEAD EMAIL WAS REROUTED TO ORIGINAL RECIPIENTS')
           } else {
             console.log('------ CRITICAL FAILURE: COULD NOT DETERMINE THE DIRECTION OF THE EMAIL ------')
