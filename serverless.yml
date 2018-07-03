@@ -56,13 +56,6 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  emailProxy:
-    handler: handler.emailProxy
-    timeout: 120
-    environment:
-      PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):proxy_email.proxy_email}
-      S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
-
   emailRouter:
     handler: handler.emailRouter
     timeout: 120

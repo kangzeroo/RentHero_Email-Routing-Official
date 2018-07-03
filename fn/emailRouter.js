@@ -144,7 +144,7 @@ module.exports = function(event, context, callback){
                         .then((extractedS3Email) => {
                               const checklist = [
                                 // results[0] - Is this a fwd from landlord or a completely seperate lead
-                                rdsAPI.checkIfKnownLandlordStaff(participants.from),
+                                rdsAPI.checkIfKnownLandlordStaff(participants.from, proxyEmail),
                                 // results[1] - Is the lead's email client `gmail` or `outlook` ..etc
                                 extractionAPI.determineEmailClient(sesEmail),
                                 // results[2] - Where did this lead come from (eg. kijiji, zumper, direct_tenant)
@@ -161,6 +161,7 @@ module.exports = function(event, context, callback){
                                               meta.targetAd = results[3].ad_id
                                               meta.supervisionSettings = results[3].supervision_settings
                                               console.log(meta)
+                                              // [TODO]: The actual email rerouting
                                               return rerouteEmail.fn(meta, extractedS3Email, participants)
                                             })
                                             .then((data) => {

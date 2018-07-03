@@ -2,6 +2,7 @@ const axios = require('axios')
 const AWS = require('aws-sdk')
 const extractionAPI = require('../extraction/extraction_api')
 
+// [TODO]: Implement below function
 module.exports.forwardToLead = function(email_ref, formattedEmail, proxyEmail){
   console.log(`------ FORWARDING EMAIL TO LEAD ------`)
   console.log(email_ref)
@@ -52,6 +53,7 @@ module.exports.forwardToLead = function(email_ref, formattedEmail, proxyEmail){
   return p
 }
 
+// [TODO]: Implement below function
 module.exports.forwardToAI = function(relationship, formattedEmail, proxyEmail, originalMessageId){
   console.log(`------ FORWARDING EMAIL TO AGENT ------`)
   console.log(relationship)
