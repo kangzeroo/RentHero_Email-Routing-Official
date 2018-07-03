@@ -42,6 +42,7 @@ module.exports.checkIfKnownLandlordStaff = function(from_emails, proxy_email) {
 
 // grab alias_emails from original_emails, and add to db if not exists
 module.exports.grab_alias_emails = function(original_emails) {
+  console.log(`------ Trading in original_emails for alias_emails ------`)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -66,6 +67,7 @@ module.exports.grab_alias_emails = function(original_emails) {
 
 // grab original_emails from alias_emails
 module.exports.grab_original_emails = function(alias_emails) {
+  console.log(`------ Trading in alias_emails for original_emails ------`)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -90,6 +92,7 @@ module.exports.grab_original_emails = function(alias_emails) {
 
 // using just the proxy_email and some URLS from the incoming email, query for similar URL links on the advertisement_links table
 module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
+  console.log(`------ FUZZY SEARCHING ON AD URLS ------`)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -100,15 +103,18 @@ module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
     axios.post(`${RDS_MS}/fuzzysearch_ad_urls`, { proxy_email: proxy_email }, headers)
       .then((data) => {
         console.log(`------ Successful POST/fuzzysearch_ad_urls ------`)
-        const found_urls = Regexr.findAddresses(extractedS3Email.textAsHtml)
+        const found_urls = Regexr.findURLS(extractedS3Email.textAsHtml)
         const real_urls = data.data.data
+        const unique_matches = Fuzzy.searchURLs(found_urls, real_urls)
         console.log('found_urls: ', found_urls)
         console.log('real_urls: ', real_urls)
-        const unique_matches = Fuzzy.searchURLs(found_urls, real_urls)
-        res({
+        console.log('unique matches on url: ', unique_matches)
+        const obj = {
           title: 'fuzzysearch_ad_urls',
           unique_matches: unique_matches
-        })
+        }
+        console.log('response object: ', obj)
+        res(obj)
       })
       .catch((err) => {
         console.log('------> Failed POST/fuzzysearch_ad_urls')
@@ -121,6 +127,7 @@ module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
 
 // using just the proxy_email and some parsed addresses from the incoming email, query for similar URL links on the advertisement_links table
 module.exports.fuzzysearch_ad_addresses = function(proxy_email, extractedS3Email) {
+  console.log(`------ FUZZY SEARCHING ON AD ADDRESSES ------`)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -133,13 +140,16 @@ module.exports.fuzzysearch_ad_addresses = function(proxy_email, extractedS3Email
         console.log(`------ Successful POST/fuzzysearch_ad_addresses ------`)
         const found_addresses = Regexr.findAddresses(extractedS3Email.textAsHtml)
         const real_addresses = data.data.data
+        const unique_matches = Fuzzy.searchAddresses(found_addresses, real_addresses)
         console.log('found_addresses: ', found_addresses)
         console.log('real_addresses: ', real_addresses)
-        const unique_matches = Fuzzy.searchAddresses(found_addresses, real_addresses)
-        res({
+        console.log('unique matches on address: ', unique_matches)
+        const obj = {
           title: 'fuzzysearch_ad_addresses',
           unique_matches: unique_matches
-        })
+        }
+        console.log('response object: ', obj)
+        res(obj)
       })
       .catch((err) => {
         console.log('------> Failed POST/fuzzysearch_ad_addresses')
@@ -163,7 +173,7 @@ module.exports.get_supervision_settings = function(ad_id) {
       .then((data) => {
         console.log(`------ Successful POST/get_supervision_settings ------`)
         console.log(data.data)
-        res(data.data)
+        res(data.data.data)
       })
       .catch((err) => {
         console.log('------> Failed POST/get_supervision_settings')
