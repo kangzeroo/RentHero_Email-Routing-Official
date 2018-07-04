@@ -6,7 +6,8 @@
   "dependencies": {
     "aws-sdk": "2.263.1",
     "axios": "0.18.0",
-    "fuse.js": "^3.2.1",
+    "fuse.js": "3.2.1",
+    "mailcomposer": "4.0.2",
     "mailparser": "2.2.0",
     "moment": "2.22.2"
   },

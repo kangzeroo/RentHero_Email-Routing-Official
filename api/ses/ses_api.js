@@ -1,106 +1,59 @@
 const axios = require('axios')
+const mailcomposer = require('mailcomposer')
 const AWS = require('aws-sdk')
-const extractionAPI = require('../extraction/extraction_api')
 
 
-// [TODO]: Implement below function
-module.exports.forwardToLead = function(meta, extractedS3Email, participants, proxyPairs){
-  console.log('------ ABOUT TO FORWARD THE EMAIL OFF TO THE LEADS ------')
-  console.log('meta: ', meta)
-  console.log('extractedS3Email: ', extractedS3Email)
-  console.log('participants: ', participants)
-  console.log('proxyPairs: ', proxyPairs)
-  // const ses = new AWS.SES()
-  // const p = new Promise((res, rej) => {
-  //   const params = {
-  //     Destination: {
-  //      BccAddresses: [],
-  //      CcAddresses: formattedEmail.cc && formattedEmail.cc.value[0] ? [formattedEmail.cc.value[0].address] : [],
-  //      ToAddresses: [email_ref.SENDER_EMAIL_ADDR]
-  //     },
-  //     Message: {
-  //      Body: {
-  //       Html: {
-  //        Charset: 'UTF-8',
-  //        Data: formattedEmail.textAsHtml
-  //       },
-  //       Text: {
-  //        Charset: 'UTF-8',
-  //        Data: formattedEmail.text
-  //       }
-  //      },
-  //      Subject: {
-  //       Charset: 'UTF-8',
-  //       Data: formattedEmail.subject
-  //      }
-  //     },
-  //     ReplyToAddresses: [proxyEmail],
-  //     Source: proxyEmail
-  //   }
-  //   console.log(`------ SES Email Params ------`)
-  //   console.log(params)
-  //   ses.sendEmail(params, function(err, data) {
-  //     if (err) {
-  //       console.log(`------ Failed POST/ses.sendEmail ------`)
-  //       console.log(err, err.stack)
-  //       rej(err)
-  //     } else {
-  //       console.log(`------ Successful POST/ses.sendEmail ------`)
-  //       console.log(data);
-  //       res(data)
-  //     }
-  //   })
-  // })
-  // return p
-}
-
-// [TODO]: Implement below function
-module.exports.forwardToAI = function(relationship, formattedEmail, proxyEmail, originalMessageId){
-  console.log(`------ FORWARDING EMAIL TO AGENT ------`)
-  console.log(relationship)
-  console.log(formattedEmail)
-  console.log(proxyEmail)
-  const unique_subject_thread = extractionAPI.extractReplyToID(formattedEmail) === 'none' ? ` --- ${originalMessageId}` : ''
-  console.log(`------ ABOUT TO FORWARD OUT EMAIL ------`)
+// From Agent to Lead
+module.exports.sendForthEmails = function(mail){
+  console.log('------ SENDING OUT THE EMAILS ------')
   const ses = new AWS.SES()
   const p = new Promise((res, rej) => {
-    const params = {
-      Destination: {
-       BccAddresses: [],
-       CcAddresses: formattedEmail.cc && formattedEmail.cc.value[0] ? [formattedEmail.cc.value[0].address] : [],
-       ToAddresses: [relationship.ai_email]
-      },
-      Message: {
-       Body: {
-        Html: {
-         Charset: 'UTF-8',
-         Data: formattedEmail.textAsHtml
-        },
-        Text: {
-         Charset: 'UTF-8',
-         Data: formattedEmail.text
-        }
-       },
-       Subject: {
-        Charset: 'UTF-8',
-        Data: `${formattedEmail.subject}${unique_subject_thread}`
-       }
-      },
-      ReplyToAddresses: [proxyEmail],
-      Source: proxyEmail
-    }
-    console.log(`------ SES Email Params ------`)
-    console.log(params)
-    ses.sendEmail(params, function(err, data) {
+    mail.build((err, message) => {
       if (err) {
-        console.log(`------ Failed POST/ses.sendEmail ------`)
-        console.log(err, err.stack)
-        rej(err)
-      } else {
-        console.log(`------ Successful POST/ses.sendEmail ------`)
-        console.log(data);
-        res(data)
+        rej({ message: `Error creating raw email with mailcomposer: ${err}`, err: err })
       }
+      const params = { RawMessage: { Data: message }}
+      console.log('params: ', params)
+      ses.sendRawEmail(params, function(err, data) {
+        if (err) {
+          rej({ message: `Error sending raw email with SES: ${err}`, err: err })
+          return
+        }
+        console.log(`------ SES SUCCESSFULLY SENT FORTH EMAIL ------`)
+        console.log(data)
+        res(data)
+      })
+    })
+  })
+  return p
+}
+
+module.exports.cannotHaveMultipleRentHeroProxies = function(participants) {
+  console.log(`------ SENDING OUT EMAIL ABOUT NO MULTIPLE RENTHERO PROXIES ------`)
+  const p = new Promise((res, rej) => {
+    const ses = new AWS.SES()
+    const mail = mailcomposer({
+      from: `no-reply${process.env.PROXY_EMAIL}`,
+      replyTo: `no-reply${process.env.PROXY_EMAIL}`,
+      to: participants.from,
+      subject: 'Cannot have multiple RentHero Assistants in same email',
+      text: 'You are receiving this message because you have attempted to include multiple RentHero assistants in the same email. Please resend your message with only 1 RentHero assistant max.'
+    })
+    mail.build((err, message) => {
+      if (err) {
+        rej({ message: `Error creating raw email with mailcomposer: ${err}`, err: err })
+        return
+      }
+      const params = { RawMessage: { Data: message }}
+      console.log('params: ', params)
+      ses.sendRawEmail(params, function(err, data) {
+        if (err) {
+          rej({ message: `Error sending raw email with SES: ${err}`, err: err })
+        }
+        console.log(`------ SES SUCCESSFULLY SENT WARNING EMAIL ------`)
+        console.log(data)
+        res(data)
+      })
     })
   })
   return p

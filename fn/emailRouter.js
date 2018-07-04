@@ -1,4 +1,5 @@
 const rdsAPI = require('../api/rds/rds_api')
+const sesAPI = require('../api/ses/ses_api')
 const rerouteEmail = require('../api/proxy/reroute_email')
 const s3API = require('../api/s3/s3_api')
 const dynAPI = require('../api/dyn/dyn_api')
@@ -132,7 +133,21 @@ module.exports = function(event, context, callback){
     console.log('CC: ', ccProxies)
     console.log('------ SENDING OUT THE ERROR EMAIL TO ORIGINAL SENDER ------')
     // Bad, we have multiple RentHero proxy emails in the same email thread (eg. heffe@renthero.ai, steve@renthero.ai)
-    // [TODO]: Send back SES email to original sender with "Unfortunetely you cannot have multiple RentHero assistants in the same email thread. Please resend your email with only 1 RentHero Assistant"
+    // Send back SES email to original sender with "Unfortunetely you cannot have multiple RentHero assistants in the same email thread. Please resend your email with only 1 RentHero Assistant"
+    sesAPI.cannotHaveMultipleRentHeroProxies(participants)
+          .then((data) => {
+            const response = {
+              statusCode: 200,
+              body: JSON.stringify({
+                message: 'Successfully sent ERROR EMAIL to sender. Cannot have multiple RentHero proxy emails in the same thread.',
+                data: data,
+              })
+            }
+            callback(null, response)
+          })
+          .catch((err) => {
+            callback(null, err)
+          })
   } else {
     console.log('------ AS EXPECTED, THERE ARE NOT MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
     const proxyEmail = toProxies[0]
@@ -173,7 +188,7 @@ module.exports = function(event, context, callback){
                                               meta.supervisionSettings = results[3].supervision_settings
                                               console.log(meta)
                                               // save the knowledge history of every participant to dynamodb
-                                              return dynAPI.saveKnowledgeHistory(sesEmail, meta, extractedS3Email, participants, proxyEmail)
+                                              return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
                                             })
                                             .then((data) => {
                                               console.log('------ SUCCESSFULLY SAVED KNOWLEDGE HISTORY OF PARTICIPANTS ------')
@@ -200,13 +215,11 @@ module.exports = function(event, context, callback){
                                               console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
                                               console.log(proxyPairs)
                                               if (meta.targetAd === 'unknown') {
-                                                // [TODO]: The fallback email rerouting
                                                 console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
-                                                return rerouteEmail.fallback(sesEmail, meta, extractedS3Email, participants, proxyEmail, proxyPairs)
+                                                return rerouteEmail.sendOutFallbackAgentEmail(meta, extractedS3Email, participants, proxyEmail, proxyPairs)
                                               } else {
-                                                // [TODO]: The actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
                                                 console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
-                                                return rerouteEmail.fn(sesEmail, meta, extractedS3Email, participants, proxyEmail, proxyPairs)
+                                                return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, proxyPairs)
                                               }
                                             })
                                             .then((data) => {
@@ -226,9 +239,33 @@ module.exports = function(event, context, callback){
           } else if (direction === 'agentToLead') {
             console.log('------ HANDLING AN AGENT-->LEAD EMAIL ------')
             console.log('------ AGENT EMAIL BEING REROUTED TO ORIGINAL RECIPIENTS ------')
-            // [TODO]: Forward this email back to all original recipients
+            // Forward this email back to all original recipients
             // should also check supervision_settings before actually sending out to leads
-            return Promise.resolve('AGENT TO LEAD EMAIL WAS REROUTED TO ORIGINAL RECIPIENTS')
+            let extractedS3Email
+            return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+                        .then((s3Email) => {
+                          return extractionAPI.extractEmail(s3Email)
+                        })
+                        .then((s3Email) => {
+                          extractedS3Email = s3Email
+                          return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
+                        })
+                        .then((data) => {
+                          return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                        })
+                        .then((data) => {
+                          const response = {
+                            statusCode: 200,
+                            body: JSON.stringify({
+                              message: 'Email was successfully routed from agent to lead',
+                              data: data,
+                            })
+                          }
+                          callback(null, response)
+                        })
+                        .catch((err) => {
+                          callback(null, err)
+                        })
           } else {
             console.log('------ CRITICAL FAILURE: COULD NOT DETERMINE THE DIRECTION OF THE EMAIL ------')
             return Promise.reject('Could not determine which direction this email was going')
@@ -261,8 +298,31 @@ module.exports = function(event, context, callback){
       console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [CC:ADDRESS] ------')
       console.log('------ SAVING THIS EMAIL TO KNOWLEDGE HISTORY BUT NOT DOING ANYTHING ELSE WITH IT ------')
       // No the proxy@renthero.ai email does not exist in [to:address] but does exist in [cc:address]
-      // [TODO]: Simply save this email in the proxy's knowledge history
-      callback(null, 'Proxy was only CCd, so simply saved email to knowledge history')
+      // Simply save this email in the proxy's knowledge history
+      s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+            .then((s3Email) => {
+              return extractionAPI.extractEmail(s3Email)
+            })
+            .then((extractedS3Email) => {
+              return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
+            })
+            .then((data) => {
+              meta.targetAd = data.found ? data.ad_id : 'unknown'
+              return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
+            })
+            .then((data) => {
+              const response = {
+                statusCode: 200,
+                body: JSON.stringify({
+                  message: 'Successfully saved knowledge history for this CCd proxy',
+                  data: data,
+                })
+              }
+              callback(null, response)
+            })
+            .catch((err) => {
+              callback(null, err)
+            })
     } else {
       console.log('------ NO THE RENTHERO PROXY WAS NOT FOUND IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
       callback(null, 'No Matching Proxy [to:address] or [cc:address] found')

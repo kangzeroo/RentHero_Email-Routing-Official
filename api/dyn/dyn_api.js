@@ -13,7 +13,7 @@ const EMAIL_ROLES = {
 }
 
 // Save participant memories to DYN
-module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email, participants, proxyEmail) {
+module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, proxyEmail) {
   console.log('------ SAVING KNOWLEDGE HISTORY OF PARTICIPANTS ------')
   const headers = {
     headers: {
@@ -27,7 +27,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
       'HISTORY_ID': uuid.v4(),
       'REGULAR_MESSAGE_ID': participants.messageID[0],
       'SES_MESSAGE_ID': sesEmail.messageId,
-      'AD_ID': meta.targetAd.targetAd,
+      'AD_ID': meta.targetAd,
       'ROLE': EMAIL_ROLES.TO,
       'TIMESTAMP': moment().toISOString(),
       'PROXY_EMAIL': proxyEmail
@@ -39,7 +39,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
       'HISTORY_ID': uuid.v4(),
       'REGULAR_MESSAGE_ID': participants.messageID[0],
       'SES_MESSAGE_ID': sesEmail.messageId,
-      'AD_ID': meta.targetAd.targetAd,
+      'AD_ID': meta.targetAd,
       'ROLE': EMAIL_ROLES.FROM,
       'TIMESTAMP': moment().toISOString(),
       'PROXY_EMAIL': proxyEmail
@@ -51,7 +51,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
       'HISTORY_ID': uuid.v4(),
       'REGULAR_MESSAGE_ID': participants.messageID[0],
       'SES_MESSAGE_ID': sesEmail.messageId,
-      'AD_ID': meta.targetAd.targetAd,
+      'AD_ID': meta.targetAd,
       'ROLE': EMAIL_ROLES.CC,
       'TIMESTAMP': moment().toISOString(),
       'PROXY_EMAIL': proxyEmail
@@ -63,7 +63,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
       'HISTORY_ID': uuid.v4(),
       'REGULAR_MESSAGE_ID': participants.messageID[0],
       'SES_MESSAGE_ID': sesEmail.messageId,
-      'AD_ID': meta.targetAd.targetAd,
+      'AD_ID': meta.targetAd,
       'ROLE': EMAIL_ROLES.IN_REPLY_TO,
       'TIMESTAMP': moment().toISOString(),
       'PROXY_EMAIL': proxyEmail
@@ -75,7 +75,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
       'HISTORY_ID': uuid.v4(),
       'REGULAR_MESSAGE_ID': participants.messageID[0],
       'SES_MESSAGE_ID': sesEmail.messageId,
-      'AD_ID': meta.targetAd.targetAd,
+      'AD_ID': meta.targetAd,
       'ROLE': EMAIL_ROLES.RETURN_PATH,
       'TIMESTAMP': moment().toISOString(),
       'PROXY_EMAIL': proxyEmail
@@ -98,7 +98,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, extractedS3Email,
   return p
 }
 
-// [TODO]: Implement below function
+
 module.exports.collectKnowledgeHistory = function() {
   console.log(`------ COLLECTING KNOWLEDGE HISTORY FROM DYNAMODB ------`)
   const p = new Promise((res, rej) => {

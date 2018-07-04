@@ -133,15 +133,23 @@ module.exports.determineEmailClient = function(sesEmail) {
 // Determine if this email is from lead-->agent or from agent-->lead
 module.exports.determineMessageDirection = function(from_emails, proxy_email) {
   const p = new Promise((res, rej) => {
-    let direction = 'leadToAgent'
-    from_emails.forEach((from) => {
-      if (from === proxy_email) {
-        direction = 'agentToLead'
-      }
-    })
-    console.log(`------ DETERMINING THE DIRECTION OF THIS EMAIL ------`)
-    console.log(direction)
-    res(direction)
+    rdsAPI.all_agent_emails(proxy_email)
+          .then((agent_emails) => {
+            let direction = 'leadToAgent'
+            from_emails.forEach((from) => {
+              agent_emails.forEach((ag) => {
+                if (from === ag.agent_email) {
+                  direction = 'agentToLead'
+                }
+              })
+            })
+            console.log(`------ DETERMINING THE DIRECTION OF THIS EMAIL ------`)
+            console.log(direction)
+            res(direction)
+          })
+          .catch((err) => {
+            rej(err)
+          })
   })
   return p
 }
