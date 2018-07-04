@@ -66,6 +66,9 @@ functions:
       S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
       NODE_ENV: ${self:provider.stage}
 
+  ccRouter:
+      handler: handler.ccRouter
+      
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
