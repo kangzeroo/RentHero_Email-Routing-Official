@@ -43,35 +43,34 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
             const agent_email = data.agent_email
             console.log(agent_email)
             const params = {}
-            // FROM
+            // --> LEAD EMAIL (SENDER)
             const x_from = participants.from.map((from) => {
               return loopFindPair(from, proxyPairs)
             })
-            if (x_from && x_from.length > 0) {
-              params.from = x_from
-            }
-            // CC (will also duplicate the from:address, with a `TAG___`)
             const leadEmailDuplicate = x_from[0]
+            // FROM
+            params.from = proxyEmail
+            // CC
             const x_cc = participants.cc.map((cc) => {
               return loopFindPair(cc, proxyPairs)
-            }).concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : [])
+            })
             if (x_cc && x_cc.length > 0) {
               params.cc = x_cc
             }
             // REPLY TO
-            const x_replyTo = proxyEmail
-            if (x_replyTo) {
-              params.replyTo = proxyEmail
-            }
+            // we have 2 replyTos for our AI so that we can preserve the lead's email upon reply, using a simple `TAG___`
+            params.replyTo = [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : [])
+
             // TO
-            const x_to = [agent_email].concat(participants.to.filter((to) => {
-              return to !== proxyEmail
-            }).map((to) => {
-              return loopFindPair(to, proxyPairs)
-            }))
-            if (x_to && x_to.length > 0) {
-              params.to = x_to
-            }
+            params.to = agent_email
+            // const x_to = [agent_email].concat(participants.to.filter((to) => {
+            //   return to !== proxyEmail
+            // }).map((to) => {
+            //   return loopFindPair(to, proxyPairs)
+            // }))
+            // if (x_to && x_to.length > 0) {
+            //   params.to = x_to
+            // }
             // The rest
             params.subject = extractedS3Email.subject,
             params.text = extractedS3Email.text,
@@ -127,18 +126,20 @@ module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, part
                                         return loopFindPair(from, proxyPairs)
                                       })[0]
             const params = {
-              from: participants.from.map((from) => {
-                      return loopFindPair(from, proxyPairs)
-                    }),
-              replyTo: proxyEmail,
-              to: [fallback_agent_email].concat(participants.to.filter((to) => {
-                    return to !== proxyEmail
-                  }).map((to) => {
-                    return loopFindPair(to, proxyPairs)
-                  })),
+              // from: participants.from.map((from) => {
+              //         return loopFindPair(from, proxyPairs)
+              //       }),
+              from: proxyEmail,
+              replyTo: [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
+              to: fallback_agent_email,
+                  // [fallback_agent_email].concat(participants.to.filter((to) => {
+                  //   return to !== proxyEmail
+                  // }).map((to) => {
+                  //   return loopFindPair(to, proxyPairs)
+                  // })),
               cc: participants.cc.map((cc) => {
                     return loopFindPair(cc, proxyPairs)
-                  }).concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
+                  }),
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml,
@@ -174,65 +175,76 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
     console.log('proxyEmail: ', proxyEmail)
     const alias_emails = []
     participants.to.filter((to) => {
-      return to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+      return to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && to.indexOf('TAG___') === -1
     }).forEach((to) => {
       alias_emails.push(to)
     })
+    console.log('alias_emails: ', alias_emails)
     participants.from.filter((from) => {
       return from.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
     }).forEach((from) => {
       alias_emails.push(from)
     })
-    participants.returnPath.filter((cc) => {
-      return cc.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
-    }).forEach((returnPath) => {
-      alias_emails.push(returnPath)
-    })
+    console.log('alias_emails: ', alias_emails)
     participants.cc.filter((cc) => {
       return cc.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && cc.indexOf('TAG___') === -1
     }).forEach((cc) => {
       alias_emails.push(cc)
     })
-    const receipient = participants.cc.filter((cc) => {
-      return cc.indexOf('TAG___') > -1
+    console.log('alias_emails: ', alias_emails)
+    // participants.to has [heffe@renthero.ai, TAG___leadXYZ@renthero.cc]
+    const receipient = participants.to.filter((to) => {
+      return to.indexOf('TAG___') > -1 && to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
     })[0]
+    console.log('receipient')
+    console.log(receipient)
+    console.log('cut off')
+    console.log('TAG___'.length)
+    console.log(receipient.slice('TAG___'.length))
     let lead_email
     if (receipient){
-      lead_email = receipient.slice('TAG___'.length)
+      lead_email = receipient.slice(8)
       alias_emails.push(lead_email)
     }
+    console.log('<-------- experiemnt -------->')
+    console.log(receipient.slice(0))
+    console.log(receipient.slice(1))
+    console.log(receipient.slice(2))
+    console.log(receipient.slice(3))
+    console.log(receipient.slice(4))
+    console.log(receipient.slice(5))
+    console.log(receipient.slice(6))
+    console.log(receipient.slice(7))
+    console.log(receipient.slice(8))
+    console.log(receipient.slice(9))
+    console.log(receipient.slice(10))
+    console.log('Lead Email: ', lead_email)
     console.log('------ GRABBING THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
     console.log('Alias Emails: ', alias_emails)
     rdsAPI.grab_original_emails(alias_emails)
           .then((proxyPairs) => {
             console.log('------ GOT THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
-
+            console.log(proxyPairs)
+            console.log(loopFindPair(lead_email, proxyPairs))
             const params = {
               from: proxyEmail,
-              replyTo: proxyEmail,
+              replyTo: supervision_settings.reviewer_emails && supervision_settings.reviewer_emails.length > 0
+                       ?
+                       loopFindPair(lead_email, proxyPairs)
+                       :
+                       proxyEmail,
               to: supervision_settings.reviewer_emails && supervision_settings.reviewer_emails.length > 0
                   ?
                   supervision_settings.reviewer_emails
                   :
-                  participants.from.filter((from) => {
-                    return from !== proxyEmail
-                  }).concat(lead_email ? [lead_email] : []).map((from) => {
-                    return loopFindPair(from, proxyPairs)
-                  }),
+                  loopFindPair(lead_email, proxyPairs),
               cc: supervision_settings.cc_emails && supervision_settings.cc_emails.length > 0
                   ?
-                  supervision_settings.cc_emails.concat(participants.cc.filter((cc) => {
-                    // remove any lead TAG___s from the public eye
-                    return cc.indexOf('TAG___') === -1
-                  }).map((cc) => {
+                  supervision_settings.cc_emails.map((cc) => {
                     return loopFindPair(cc, proxyPairs)
-                  }))
+                  })
                   :
-                  participants.cc.filter((cc) => {
-                    // remove any lead TAG___s from the public eye
-                    return cc.indexOf('TAG___') === -1
-                  }).map((cc) => {
-                    // but keep any existing public CCs
+                  participants.cc.map((cc) => {
                     return loopFindPair(cc, proxyPairs)
                   }),
               subject: extractedS3Email.subject,
@@ -262,7 +274,7 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
 }
 
 const loopFindPair = (email, proxyPairs) => {
-  let pair = ''
+  let pair = email
   proxyPairs.forEach((prx) => {
     if (prx.original_email === email) {
       pair = prx.alias_email

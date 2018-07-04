@@ -43,6 +43,7 @@ module.exports.checkIfKnownLandlordStaff = function(from_emails, proxy_email) {
 // grab alias_emails from original_emails, and add to db if not exists
 module.exports.grab_alias_emails = function(original_emails) {
   console.log(`------ Trading in original_emails for alias_emails ------`)
+  console.log(original_emails)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -68,6 +69,7 @@ module.exports.grab_alias_emails = function(original_emails) {
 // grab original_emails from alias_emails
 module.exports.grab_original_emails = function(alias_emails) {
   console.log(`------ Trading in alias_emails for original_emails ------`)
+  console.log(alias_emails)
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
