@@ -67,8 +67,14 @@ functions:
       NODE_ENV: ${self:provider.stage}
 
   ccRouter:
-      handler: handler.ccRouter
-      
+    handler: handler.ccRouter
+    environment:
+      PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.PROXY_EMAIL_DOMAIN}
+      AGENT_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.AGENT_EMAIL_DOMAIN}
+      ALIAS_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.ALIAS_EMAIL_DOMAIN}
+      S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
+      NODE_ENV: ${self:provider.stage}
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
