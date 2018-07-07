@@ -6,7 +6,7 @@ module.exports.handleAgentEmail = function(agent_email, proxy_email, lead_email,
     console.log('------ HANDLING AGENT EMAIL ------')
     const params = {
       from: agent_email,
-      replyTo: participants,
+      replyTo: agent_email,
       to: [proxy_email, lead_email],
       cc: participants.cc,
       subject: `AI RESPONSE: ${extractedS3Email.subject}`,

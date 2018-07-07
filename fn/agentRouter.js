@@ -45,21 +45,25 @@ module.exports = function(event, context, callback){
   */
   console.log('------ FYI: THERE SHOULD NOT BE MULTIPLE AGENTS RECEIVING THIS EMAIL ------')
   console.log('------ THIS CODE DOES NOT CHECK FOR MULTIPLE AGENTS, IT JUST ASSUMES ONLY 1 AGENT IS HERE ------')
+
   const agent_email = participants.to.filter((to) => {
-    return to.indexOf(process.env.AGENT_EMAIL)
+    return to.indexOf('TAG___') === -1 && to.indexOf(process.env.AGENT_EMAIL)
   })[0]
   console.log('agent_email: ', agent_email)
+
+  const lead_email = participants.to.filter((to) => {
+    return to.indexOf('TAG___') > -1 && to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+  })[0]
+  console.log('lead_email: ', lead_email)
+
   const proxy_email = participants.from.filter((from) => {
     return from.indexOf(process.env.PROXY_EMAIL)
   })[0]
   console.log('proxy_email: ', proxy_email)
-  const lead_email = participants.returnPath.filter((retr) => {
-    return retr.indexOf('TAG___') > -1 && retr.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
-  })[0]
-  console.log('lead_email: ', lead_email)
+
   if (agent_email && proxy_email) {
     let extractedS3Email
-    s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+    s3API.grabEmail(process.env.S3_BUCKET, `agent_emails/${sesEmail.messageId}`)
         .then((s3Email) => {
           return extractionAPI.extractEmail(s3Email)
         })
@@ -93,6 +97,7 @@ module.exports = function(event, context, callback){
         })
         .catch((err) => {
           console.log('------ A FATAL ERROR OCCURRED ------')
+          console.log(err)
           callback(null, err)
         })
   } else {

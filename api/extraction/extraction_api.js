@@ -40,10 +40,10 @@ module.exports.extractPeoples = function(headerValue) {
       return text.slice(text.indexOf('<')+1, text.indexOf('>'))
     })
   } else {
-    ppl = headerValue.split(',')
+    ppl = headerValue.replace(' ', '').split(',')
   }
   console.log(ppl)
-  return ppl
+  return ppl.map(p => p.replace(' ', ''))
 }
 
 // Extract all the participants in an email (to, from, cc, inReplyTo, returnPath, messageID)
@@ -79,7 +79,7 @@ module.exports.extractParticipants = function(sesEmail) {
   console.log('inReplyToAddresses: ', inReplyToAddresses)
   // -------- RETURN ADDRESS -------- //
   const returnAddresses = sesEmail.headers.filter((header) => {
-    return header.name.toLowerCase() === 'return-path'
+    return header.name.toLowerCase() === 'reply-to' || header.name.toLowerCase() === 'return-path'
   }).map((header) => {
     return module.exports.extractPeoples(header.value)
   })[0] || []
@@ -171,7 +171,7 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
             from_emails.forEach((from) => {
               proxy_fallback_emails.forEach((fp) => {
                 if (from === fp.email) {
-                  direction = 'agentToLead'
+                  direction = 'fallbackAgentToLead'
                 }
               })
             })
@@ -227,10 +227,7 @@ module.exports.determineWhatTypeOfAgent = function(agent_email, proxy_email) {
           console.log(`------ DETERMINING THE TYPE OF AGENT THAT IS RECEIVING THIS EMAIL ------`)
           console.log(typeOfAgent)
           if (typeOfAgent) {
-            res({
-              type: typeOfAgent,
-
-            })
+            res(typeOfAgent)
           } else {
             console.log(`------ COULD NOT DETERMINE THE TYPE OF AGENT THAT IS RECEIVING THIS EMAIL ------`)
             rej('Could not determine the type of agent that is receiving message')

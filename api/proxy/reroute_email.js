@@ -62,7 +62,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
             params.replyTo = [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : [])
 
             // TO
-            params.to = agent_email
+            params.to = [agent_email].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : [])
             // const x_to = [agent_email].concat(participants.to.filter((to) => {
             //   return to !== proxyEmail
             // }).map((to) => {
@@ -130,8 +130,8 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
               //         return loopFindPair(from, aliasPairs)
               //       }),
               from: proxyEmail,
-              replyTo: [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
-              to: fallback_agent_email,
+              replyTo: proxyEmail,
+              to: [fallback_agent_email].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
                   // [fallback_agent_email].concat(participants.to.filter((to) => {
                   //   return to !== proxyEmail
                   // }).map((to) => {
@@ -143,12 +143,12 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml,
-              attachments: extractedS3Email.attachments.map((attc) => {
+              attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
                 return {
                   filename: attc.filename,
                   content: attc.content
                 }
-              })
+              }) : []
             }
             const mail = mailcomposer(params)
             console.log('------ CREATED THE RAW LEAD->FALLBACK AGENT EMAIL TO BE SENT OUT ------')
@@ -203,7 +203,7 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
     console.log(receipient.slice('TAG___'.length))
     let lead_email
     if (receipient){
-      lead_email = receipient.slice(8)
+      lead_email = receipient.slice('TAG___'.length)
       alias_emails.push(lead_email)
     }
     console.log('<-------- experiemnt -------->')
@@ -250,12 +250,12 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml,
-              attachments: extractedS3Email.attachments.map((attc) => {
+              attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
                 return {
                   filename: attc.filename,
                   content: attc.content
                 }
-              })
+              }) : []
             }
             const mail = mailcomposer(params)
             console.log('------ CREATED THE RAW AGENT->LEAD EMAIL TO BE SENT OUT ------')
@@ -310,7 +310,7 @@ module.exports.sendOutFallbackLeadEmail = function(extractedS3Email, participant
     console.log(receipient.slice('TAG___'.length))
     let lead_email
     if (receipient){
-      lead_email = receipient.slice(8)
+      lead_email = receipient.slice('TAG___'.length)
       alias_emails.push(lead_email)
     }
     console.log('Lead Email: ', lead_email)
@@ -331,12 +331,12 @@ module.exports.sendOutFallbackLeadEmail = function(extractedS3Email, participant
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml,
-              attachments: extractedS3Email.attachments.map((attc) => {
+              attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
                 return {
                   filename: attc.filename,
                   content: attc.content
                 }
-              })
+              }) : []
             }
             const mail = mailcomposer(params)
             console.log('------ CREATED THE RAW FALLBACK AGENT->LEAD EMAIL TO BE SENT OUT ------')
