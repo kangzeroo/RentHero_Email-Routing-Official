@@ -216,7 +216,7 @@ module.exports = function(event, context, callback){
                                               console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
                                               console.log(aliasPairs)
                                               if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
-                                                console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
+                                                console.log('------ COULD NOT FIND A MATCHING AD_ID IN LEAD TO AGENT, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
                                                 return rerouteEmail.sendOutFallbackProxyEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
                                               } else if (meta.targetAd) {
                                                 console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
@@ -258,8 +258,8 @@ module.exports = function(event, context, callback){
                           meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
                           meta.supervisionSettings = data.supervision_settings
                           if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
-                            console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
-                            return Promise.reject('Could not find a matching ad_id for this agents email response to a lead')
+                            console.log('------ COULD NOT FIND A MATCHING AD_ID IN AGENT TO LEAD, LETTING THIS AGENT EMAIL BE FORWARDED ------')
+                            return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
                           } else if (meta.targetAd) {
                             console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
                             return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
@@ -289,7 +289,8 @@ module.exports = function(event, context, callback){
                         .then((s3Email) => {
                           return extractionAPI.extractEmail(s3Email)
                         })
-                        .then(() => {
+                        .then((s3Email) => {
+                          extractedS3Email = s3Email
                           return rerouteEmail.sendOutFallbackLeadEmail(extractedS3Email, participants, proxyEmail)
                         })
                         .catch((err) => {

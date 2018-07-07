@@ -6,11 +6,11 @@ module.exports.handleAdFallbackEmail = function(agent_email, proxy_email, lead_e
     console.log('------ HANDLING AD FALLBACK EMAIL ------')
     const params = {
       from: agent_email,
-      replyTo: participants,
+      replyTo: agent_email,
       to: [proxy_email, lead_email],
       cc: participants.cc,
       subject: `AD FALLBACK RESPONSE: ${extractedS3Email.subject}`,
-      text: `Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and identified the AD_ID but could not generate a response. This fallback response was made for this ad instead.`,
+      text: `Hello ${lead_email}, this is the RentHero Ad Fallback AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and identified the AD_ID but could not generate a response. This fallback response was made for this ad instead.`,
       html: `<p>Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and identified the AD_ID but could not generate a response. This fallback response was made for this ad instead.</p>`,
       attachments: extractedS3Email.attachments.map((attc) => {
         return {
@@ -40,11 +40,11 @@ module.exports.handleProxyFallbackEmail = function(agent_email, proxy_email, lea
     console.log('------ HANDLING PROXY FALLBACK EMAIL ------')
     const params = {
       from: agent_email,
-      replyTo: participants,
+      replyTo: agent_email,
       to: [proxy_email, lead_email],
       cc: participants.cc,
       subject: `PROXY FALLBACK RESPONSE: ${extractedS3Email.subject}`,
-      text: `Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and but could not identify the AD_ID, and had to fall back to a general proxy fallback instead. This is the proxy fallback email.`,
+      text: `Hello ${lead_email}, this is the RentHero Proxy AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and but could not identify the AD_ID, and had to fall back to a general proxy fallback instead. This is the proxy fallback email.`,
       html: `<p>Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and but could not identify the AD_ID, and had to fall back to a general proxy fallback instead. This is the proxy fallback email.`,
       attachments: extractedS3Email.attachments.map((attc) => {
         return {
