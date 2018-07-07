@@ -13,7 +13,13 @@ module.exports.extractEmail = function(S3Email){
     simpleParser(em)
       .then((data) => {
         console.log(`------ PARSING EMAIL INTO READABLE FORMAT ------`)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
         console.log(data)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
+        console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`)
         res(data)
       })
       .catch((err) => {
@@ -135,24 +141,36 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
   const p = new Promise((res, rej) => {
     let direction = 'leadToAgent'
     let agent_emails = []
-    let fallback_emails = []
+    let ad_fallback_emails = []
+    let proxy_fallback_emails = []
     rdsAPI.all_agent_emails(proxy_email)
           .then((x) => {
             agent_emails = x
-            return rdsAPI.all_fallback_emails(proxy_email)
+            return rdsAPI.all_ad_fallback_emails(proxy_email)
           })
           .then((x) => {
-            fallback_emails = x
+            ad_fallback_emails = x
+            return rdsAPI.all_proxy_fallback_emails(proxy_email)
+          })
+          .then((x) => {
+            proxy_fallback_emails = x
             from_emails.forEach((from) => {
-              fallback_emails.forEach((fa) => {
+              agent_emails.forEach((ag) => {
+                if (from === ag.email) {
+                  direction = 'agentToLead'
+                }
+              })
+            })
+            from_emails.forEach((from) => {
+              ad_fallback_emails.forEach((fa) => {
                 if (from === fa.email) {
                   direction = 'fallbackAgentToLead'
                 }
               })
             })
             from_emails.forEach((from) => {
-              agent_emails.forEach((ag) => {
-                if (from === ag.email) {
+              proxy_fallback_emails.forEach((fp) => {
+                if (from === fp.email) {
                   direction = 'agentToLead'
                 }
               })
@@ -174,24 +192,53 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
 }
 
 // Find out if our incoming email is for an agent (has AD_ID) or fallback (no AD_ID)
-module.exports.determineWhatTypeOfAgent = function(to_emails) {
+module.exports.determineWhatTypeOfAgent = function(agent_email, proxy_email) {
   const p = new Promise((res, rej) => {
-    let typeOfAgent = ''
-    to_emails.filter((to) => {
-      return to.indexOf(process.env.AGENT_EMAIL) > -1
-    }).forEach((to) => {
-      if (to.indexOf('FALLBACK___') > -1) {
-        typeOfAgent = 'fallback'
-      }
-      if (to.indexOf('AGENT___') > -1) {
-        typeOfAgent = 'agent'
-      }
-    })
-    if (typeOfAgent) {
-      res(typeOfAgent)
-    } else {
-      rej('Could not identify what type of agent this email address is for.')
-    }
+  let typeOfAgent = ''
+  let agent_emails = []
+  let ad_fallback_emails = []
+  let proxy_fallback_emails = []
+  rdsAPI.all_agent_emails(proxy_email)
+        .then((x) => {
+          agent_emails = x
+          return rdsAPI.all_ad_fallback_emails(proxy_email)
+        })
+        .then((x) => {
+          ad_fallback_emails = x
+          return rdsAPI.all_proxy_fallback_emails(proxy_email)
+        })
+        .then((x) => {
+          proxy_fallback_emails = x
+          agent_emails.forEach((ag) => {
+            if (agent_email === ag.email) {
+              typeOfAgent = 'agent'
+            }
+          })
+          ad_fallback_emails.forEach((fa) => {
+            if (agent_email === fa.email) {
+              typeOfAgent = 'ad_fallback'
+            }
+          })
+          proxy_fallback_emails.forEach((fp) => {
+            if (agent_email === fp.email) {
+              typeOfAgent = 'proxy_fallback'
+            }
+          })
+          console.log(`------ DETERMINING THE TYPE OF AGENT THAT IS RECEIVING THIS EMAIL ------`)
+          console.log(typeOfAgent)
+          if (typeOfAgent) {
+            res({
+              type: typeOfAgent,
+
+            })
+          } else {
+            console.log(`------ COULD NOT DETERMINE THE TYPE OF AGENT THAT IS RECEIVING THIS EMAIL ------`)
+            rej('Could not determine the type of agent that is receiving message')
+          }
+        })
+        .catch((err) => {
+          rej(err)
+        })
   })
   return p
 }

@@ -99,7 +99,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
 }
 
 // lead to agent, could not find an ad_id, goes to this fallback
-module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
+module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A LEAD --> FALLBACK AGENT EMAIL ------')
     console.log('meta: ', meta)

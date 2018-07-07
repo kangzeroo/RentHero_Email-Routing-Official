@@ -217,7 +217,7 @@ module.exports = function(event, context, callback){
                                               console.log(aliasPairs)
                                               if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
                                                 console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
-                                                return rerouteEmail.sendOutFallbackAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
+                                                return rerouteEmail.sendOutFallbackProxyEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
                                               } else if (meta.targetAd) {
                                                 console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
                                                 return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
