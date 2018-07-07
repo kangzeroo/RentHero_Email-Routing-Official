@@ -56,8 +56,8 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  emailRouter:
-    handler: handler.emailRouter
+  proxyRouter:
+    handler: handler.proxyRouter
     timeout: 120
     environment:
       PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.PROXY_EMAIL_DOMAIN}
@@ -66,8 +66,18 @@ functions:
       S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
       NODE_ENV: ${self:provider.stage}
 
-  ccRouter:
-    handler: handler.ccRouter
+  aliasRouter:
+    handler: handler.aliasRouter
+    environment:
+      PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.PROXY_EMAIL_DOMAIN}
+      AGENT_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.AGENT_EMAIL_DOMAIN}
+      ALIAS_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.ALIAS_EMAIL_DOMAIN}
+      S3_BUCKET: ${file(./creds/${self:provider.stage}/s3_creds.js):s3_bucket.bucketname}
+      NODE_ENV: ${self:provider.stage}
+
+  agentRouter:
+    handler: handler.agentRouter
+    timeout: 120
     environment:
       PROXY_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.PROXY_EMAIL_DOMAIN}
       AGENT_EMAIL: ${file(./creds/${self:provider.stage}/email_creds.js):email_domains.AGENT_EMAIL_DOMAIN}

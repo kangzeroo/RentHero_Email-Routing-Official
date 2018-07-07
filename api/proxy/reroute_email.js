@@ -4,14 +4,14 @@ const s3API = require('../s3/s3_api')
 const mailcomposer = require('mailcomposer')
 
 // reroute email from lead to agent
-module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants, proxyEmail, proxyPairs) {
+module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
   console.log('------ REROUTING AN EMAIL FROM LEAD-->AGENT ------')
   const p = new Promise((res, rej) => {
     console.log('meta: ', meta)
     console.log('extractedS3Email: ', extractedS3Email)
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
-    console.log('proxyPairs: ', proxyPairs)
+    console.log('aliasPairs: ', aliasPairs)
     // Now with all the data, we can do proper routing
     // These following scenerios are already covered by emailRouter.js
     //     - multiple renthero proxies not allowed (eg. To:heffe@renthero.ai, CC:steve@renthero.ai)
@@ -38,21 +38,21 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
     }
     console.log('------ GRABBING THE APPROPRIATE AGENT EMAIL FOR THIS AD_ID ------')
     rdsAPI.get_agent_for_ad(meta.targetAd)
-          .then((data) => {
+          .then((email) => {
             console.log('------ FOUND THE APPROPRIATE AGENT EMAIL ------')
-            const agent_email = data.agent_email
+            const agent_email = email
             console.log(agent_email)
             const params = {}
             // --> LEAD EMAIL (SENDER)
             const x_from = participants.from.map((from) => {
-              return loopFindPair(from, proxyPairs)
+              return loopFindPair(from, aliasPairs)
             })
             const leadEmailDuplicate = x_from[0]
             // FROM
             params.from = proxyEmail
             // CC
             const x_cc = participants.cc.map((cc) => {
-              return loopFindPair(cc, proxyPairs)
+              return loopFindPair(cc, aliasPairs)
             })
             if (x_cc && x_cc.length > 0) {
               params.cc = x_cc
@@ -66,7 +66,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
             // const x_to = [agent_email].concat(participants.to.filter((to) => {
             //   return to !== proxyEmail
             // }).map((to) => {
-            //   return loopFindPair(to, proxyPairs)
+            //   return loopFindPair(to, aliasPairs)
             // }))
             // if (x_to && x_to.length > 0) {
             //   params.to = x_to
@@ -99,14 +99,14 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
 }
 
 // lead to agent, could not find an ad_id, goes to this fallback
-module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, participants, proxyEmail, proxyPairs) {
+module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A LEAD --> FALLBACK AGENT EMAIL ------')
     console.log('meta: ', meta)
     console.log('extractedS3Email: ', extractedS3Email)
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
-    console.log('proxyPairs: ', proxyPairs)
+    console.log('aliasPairs: ', aliasPairs)
     if (meta.fromKnownLandlord) {
       // we can assume that this is a message forwarded to the proxy, and thus should reroute accordingly (find proof of FWD in Body and set to:address as the fwd.history[0].from)
       console.log('------ THIS EMAIL WAS SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A FORWARDED INQUIRY. CHECK THE FWD BODY FOR A TO:ADDRESS TO AUTO-RESPOND TO ------')
@@ -117,17 +117,17 @@ module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, part
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
     }
     console.log('------ GRABBING THE FALLBACK AGENT EMAIL FOR THIS PROXY_EMAIL ------')
-    rdsAPI.getFallbackAgentEmailForProxy(extractedS3Email, proxyEmail)
+    rdsAPI.getDefaultFallbackAgentEmailForProxy(proxyEmail)
           .then((fallback_agent_email) => {
             console.log('------ FOUND THE FALLBACK AGENT EMAIL FOR THIS AD_ID ------')
             console.log('fallback_agent_email: ', fallback_agent_email)
             // CC (will also duplicate the from:address, with a `TAG___`)
             const leadEmailDuplicate = participants.from.map((from) => {
-                                        return loopFindPair(from, proxyPairs)
+                                        return loopFindPair(from, aliasPairs)
                                       })[0]
             const params = {
               // from: participants.from.map((from) => {
-              //         return loopFindPair(from, proxyPairs)
+              //         return loopFindPair(from, aliasPairs)
               //       }),
               from: proxyEmail,
               replyTo: [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
@@ -135,10 +135,10 @@ module.exports.sendOutFallbackAgentEmail = function(meta, extractedS3Email, part
                   // [fallback_agent_email].concat(participants.to.filter((to) => {
                   //   return to !== proxyEmail
                   // }).map((to) => {
-                  //   return loopFindPair(to, proxyPairs)
+                  //   return loopFindPair(to, aliasPairs)
                   // })),
               cc: participants.cc.map((cc) => {
-                    return loopFindPair(cc, proxyPairs)
+                    return loopFindPair(cc, aliasPairs)
                   }),
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
@@ -222,30 +222,30 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
     console.log('------ GRABBING THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
     console.log('Alias Emails: ', alias_emails)
     rdsAPI.grab_original_emails(alias_emails)
-          .then((proxyPairs) => {
+          .then((aliasPairs) => {
             console.log('------ GOT THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
-            console.log(proxyPairs)
-            console.log(loopFindPair(lead_email, proxyPairs))
+            console.log(aliasPairs)
+            console.log(loopFindPair(lead_email, aliasPairs))
             const params = {
               from: proxyEmail,
               replyTo: supervision_settings.reviewer_emails && supervision_settings.reviewer_emails.length > 0
                        ?
-                       loopFindPair(lead_email, proxyPairs)
+                       loopFindPair(lead_email, aliasPairs)
                        :
                        proxyEmail,
               to: supervision_settings.reviewer_emails && supervision_settings.reviewer_emails.length > 0
                   ?
                   supervision_settings.reviewer_emails
                   :
-                  loopFindPair(lead_email, proxyPairs),
+                  loopFindPair(lead_email, aliasPairs),
               cc: supervision_settings.cc_emails && supervision_settings.cc_emails.length > 0
                   ?
                   supervision_settings.cc_emails.map((cc) => {
-                    return loopFindPair(cc, proxyPairs)
+                    return loopFindPair(cc, aliasPairs)
                   })
                   :
                   participants.cc.map((cc) => {
-                    return loopFindPair(cc, proxyPairs)
+                    return loopFindPair(cc, aliasPairs)
                   }),
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
@@ -273,9 +273,90 @@ module.exports.sendOutLeadEmail = function(extractedS3Email, supervision_setting
   return p
 }
 
-const loopFindPair = (email, proxyPairs) => {
+// for when a fallback agent responds to proxy, and proxy forwards it to the lead
+module.exports.sendOutFallbackLeadEmail = function(extractedS3Email, participants, proxyEmail) {
+  const p = new Promise((res, rej) => {
+    console.log('------ REROUTING A FALLBACK AGENT --> LEAD EMAIL ------')
+    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('participants: ', participants)
+    console.log('proxyEmail: ', proxyEmail)
+    const alias_emails = []
+    participants.to.filter((to) => {
+      return to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && to.indexOf('TAG___') === -1
+    }).forEach((to) => {
+      alias_emails.push(to)
+    })
+    console.log('alias_emails: ', alias_emails)
+    participants.from.filter((from) => {
+      return from.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+    }).forEach((from) => {
+      alias_emails.push(from)
+    })
+    console.log('alias_emails: ', alias_emails)
+    participants.cc.filter((cc) => {
+      return cc.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && cc.indexOf('TAG___') === -1
+    }).forEach((cc) => {
+      alias_emails.push(cc)
+    })
+    console.log('alias_emails: ', alias_emails)
+    // participants.to has [heffe@renthero.ai, TAG___leadXYZ@renthero.cc]
+    const receipient = participants.to.filter((to) => {
+      return to.indexOf('TAG___') > -1 && to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+    })[0]
+    console.log('receipient')
+    console.log(receipient)
+    console.log('cut off')
+    console.log('TAG___'.length)
+    console.log(receipient.slice('TAG___'.length))
+    let lead_email
+    if (receipient){
+      lead_email = receipient.slice(8)
+      alias_emails.push(lead_email)
+    }
+    console.log('Lead Email: ', lead_email)
+    console.log('------ GRABBING THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
+    console.log('Alias Emails: ', alias_emails)
+    rdsAPI.grab_original_emails(alias_emails)
+          .then((aliasPairs) => {
+            console.log('------ GOT THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
+            console.log(aliasPairs)
+            console.log(loopFindPair(lead_email, aliasPairs))
+            const params = {
+              from: proxyEmail,
+              replyTo: proxyEmail,
+              to: loopFindPair(lead_email, aliasPairs),
+              cc: participants.cc.map((cc) => {
+                    return loopFindPair(cc, aliasPairs)
+                  }),
+              subject: extractedS3Email.subject,
+              text: extractedS3Email.text,
+              html: extractedS3Email.textAsHtml,
+              attachments: extractedS3Email.attachments.map((attc) => {
+                return {
+                  filename: attc.filename,
+                  content: attc.content
+                }
+              })
+            }
+            const mail = mailcomposer(params)
+            console.log('------ CREATED THE RAW FALLBACK AGENT->LEAD EMAIL TO BE SENT OUT ------')
+            console.log(params)
+            console.log(mail)
+            return sesAPI.sendForthEmails(mail)
+          })
+          .then((data) => {
+            res(data)
+          })
+          .catch((err) => {
+            rej(err)
+          })
+  })
+  return p
+}
+
+const loopFindPair = (email, aliasPairs) => {
   let pair = email
-  proxyPairs.forEach((prx) => {
+  aliasPairs.forEach((prx) => {
     if (prx.original_email === email) {
       pair = prx.alias_email
     }
