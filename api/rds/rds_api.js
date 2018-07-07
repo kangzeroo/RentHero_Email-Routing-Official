@@ -199,7 +199,7 @@ module.exports.get_agent_for_ad = function(ad_id) {
       .then((data) => {
         console.log(`------ Successful POST/get_agent_for_ad ------`)
         console.log(data.data)
-        res(data.data.data)
+        res(data.data.data.email)
       })
       .catch((err) => {
         console.log('------> Failed POST/get_agent_for_ad')
@@ -211,7 +211,7 @@ module.exports.get_agent_for_ad = function(ad_id) {
 }
 
 // get the fallback agent email for this proxy
-module.exports.getFallbackAgentEmailForProxy = function(extractedS3Email, proxyEmail) {
+module.exports.getDefaultFallbackAgentEmailForProxy = function(proxyEmail) {
   // [TODO]: SENTIMENT ANALYSIS as fallback
   // custom NLP layer that detects if this lead is: ['unknown_ad', 'open_to_suggestions', 'angry']
   // this is powerful because it lets us customize what the AI does in each wildcard scenerio
@@ -222,11 +222,11 @@ module.exports.getFallbackAgentEmailForProxy = function(extractedS3Email, proxyE
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/get_fallback_agent_for_proxy`, { proxy_email: proxyEmail, proxy_email_domain: process.env.PROXY_EMAIL }, headers)
+    axios.post(`${RDS_MS}/get_default_fallback_agent_for_proxy`, { proxy_email: proxyEmail, type: 'default', proxy_email_domain: process.env.PROXY_EMAIL }, headers)
       .then((data) => {
         console.log(`------ Successful POST/get_fallback_agent_for_proxy ------`)
         console.log(data.data)
-        res(data.data.data)
+        res(data.data.fallback_email)
       })
       .catch((err) => {
         console.log('------> Failed POST/get_fallback_agent_for_proxy')
@@ -252,6 +252,28 @@ module.exports.all_agent_emails = function(proxy_email) {
       })
       .catch((err) => {
         console.log('------> Failed POST/all_agent_emails')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+module.exports.all_fallback_emails = function(proxy_email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/all_fallback_emails`, { proxy_email: proxy_email }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/all_fallback_emails ------`)
+        console.log(data.data)
+        res(data.data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/all_fallback_emails')
         console.log(err)
         rej(err)
       })

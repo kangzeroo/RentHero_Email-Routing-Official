@@ -105,7 +105,7 @@ module.exports.determineEmailClient = function(sesEmail) {
   console.log('Email Clients: ', EMAIL_CLIENTS().email_clients)
   // sesEmail.headers = [..., { name: 'Received', value: 'from CAN01-QB1-obe.outbound.protection.outlook.com (mail-eopbgr660050.outbound.protection.outlook.com [40.107.66.50]) by inbound-smtp.us-east-1.amazonaws.com with SMTP id t25a4r3fkm2fr7fabopev87v7rfoeljpg3b48ug1 for heffe@myrenthelper.com; Tue, 03 Jul 2018 06:46:57 +0000 (UTC)' }]
   const p = new Promise((res, rej) => {
-    let client = 'unknown'
+    let client = 'UNKNOWN'
     const relevantHeaders = sesEmail.headers.filter((header) => {
       return header.name.toLowerCase() === 'received'
     })
@@ -133,23 +133,65 @@ module.exports.determineEmailClient = function(sesEmail) {
 // Determine if this email is from lead-->agent or from agent-->lead
 module.exports.determineMessageDirection = function(from_emails, proxy_email) {
   const p = new Promise((res, rej) => {
+    let direction = 'leadToAgent'
+    let agent_emails = []
+    let fallback_emails = []
     rdsAPI.all_agent_emails(proxy_email)
-          .then((agent_emails) => {
-            let direction = 'leadToAgent'
+          .then((x) => {
+            agent_emails = x
+            return rdsAPI.all_fallback_emails(proxy_email)
+          })
+          .then((x) => {
+            fallback_emails = x
+            from_emails.forEach((from) => {
+              fallback_emails.forEach((fa) => {
+                if (from === fa.email) {
+                  direction = 'fallbackAgentToLead'
+                }
+              })
+            })
             from_emails.forEach((from) => {
               agent_emails.forEach((ag) => {
-                if (from === ag.agent_email) {
+                if (from === ag.email) {
                   direction = 'agentToLead'
                 }
               })
             })
             console.log(`------ DETERMINING THE DIRECTION OF THIS EMAIL ------`)
             console.log(direction)
-            res(direction)
+            if (direction) {
+              res(direction)
+            } else {
+              console.log(`------ COULD NOT DETERMINE THE DIRECTION OF THIS EMAIL ------`)
+              rej('Could not determine the direction of the message')
+            }
           })
           .catch((err) => {
             rej(err)
           })
+  })
+  return p
+}
+
+// Find out if our incoming email is for an agent (has AD_ID) or fallback (no AD_ID)
+module.exports.determineWhatTypeOfAgent = function(to_emails) {
+  const p = new Promise((res, rej) => {
+    let typeOfAgent = ''
+    to_emails.filter((to) => {
+      return to.indexOf(process.env.AGENT_EMAIL) > -1
+    }).forEach((to) => {
+      if (to.indexOf('FALLBACK___') > -1) {
+        typeOfAgent = 'fallback'
+      }
+      if (to.indexOf('AGENT___') > -1) {
+        typeOfAgent = 'agent'
+      }
+    })
+    if (typeOfAgent) {
+      res(typeOfAgent)
+    } else {
+      rej('Could not identify what type of agent this email address is for.')
+    }
   })
   return p
 }
@@ -160,7 +202,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
     console.log(`------ DETERMINING WHICH CHANNEL GENERATED THIS LEAD ------`)
     // our estimated LEAD_CHANNEL
     let estimated_channel = {
-      channel_name: 'unknown',
+      channel_name: 'UNKNOWN',
       score: 0
     }
     console.log('Lead Channels: ', LEAD_CHANNELS().lead_channels)

@@ -12,6 +12,7 @@ const headers = {
 }
 
 module.exports = function(event, context, callback){
+  console.log('------ PROXY ROUTER LAMBDA ------')
   /*
       STEPS:
       1. Determine if this email is from a known landlord's staff account (tells us if this is a fwd email from landlord, or direct email from kijiji)
@@ -19,19 +20,19 @@ module.exports = function(event, context, callback){
             - `meta.fromKnownLandlord = true || false`
       2. Determine which email client is sending this (eg. Gmail, Outlook, Yahoo, QQ, other)
             - Make note because this may affect headers and other MIME attributes
-            - `meta.emailClient = 'unknown' || 'gmail' || 'outlook' || 'qq' || 'yahoo'`
+            - `meta.emailClient = 'UNKNOWN' || 'gmail' || 'outlook' || 'qq' || 'yahoo'`
       3. Determine if this email is a lead-->agent (CASE A) or agent-->lead (CASE B)
-            - `meta.messageDirection = 'unknown' || 'leadToAgent' || 'agentToLead'`
+            - `meta.messageDirection = 'UNKNOWN' || 'leadToAgent' || 'agentToLead'`
       4. Determine where this lead is from (eg. Kijiji, Padmapper, Zumper, landlord forward, raw direct from tenant)
             - Make note because we can extract any URLs for hints on which ad the email is referring to
             - `meta.leadChannel = 'kijiji' || 'padmapper' || 'zumper' || 'mls' || 'direct_tenant' || 'landlord_forward'`
-      5. Guess which ad this email is referring to (eg. known, unknown, open_to_suggestions)
+      5. Guess which ad this email is referring to (eg. known, UNKNOWN, open_to_suggestions)
             - Make note because this determines what kind of info we reply with, or whether they are open to suggestions
-            - `meta.targetAd = '<AD_ID>' || 'unknown' || 'open_to_suggestions'`
+            - `meta.targetAd = '<AD_ID>' || 'UNKNOWN' || 'open_to_suggestions'`
       6. Check the 'Supervision Settings' for this ad to determine how we should respond
             - Eg. Should we send the message to the landlord for review, or should we directly reply and simply CC the landlord? Or maybe we can go full-auto and directly reply with CCing
             - `meta.supervisionSettings = {
-                                            ad_id: 'unknown' || 'open_to_suggestions' || '<AD_ID>',
+                                            ad_id: 'UNKNOWN' || 'open_to_suggestions' || '<AD_ID>',
                                             reviewer_emails: [emailA, emailB],
                                             cc_emails: [emailA, emailB]
                                           }`
@@ -105,12 +106,12 @@ module.exports = function(event, context, callback){
   const meta = {
     email_id: sesEmail.messageId,
     fromKnownLandlord: false, // or true
-    emailClient: 'unknown' || 'gmail' || 'outlook' || 'qq' || 'yahoo',
-    messageDirection: 'unknown' || 'leadToAgent' || 'agentToLead',
+    emailClient: 'UNKNOWN' || 'gmail' || 'outlook' || 'qq' || 'yahoo',
+    messageDirection: 'UNKNOWN' || 'leadToAgent' || 'agentToLead',
     leadChannel: 'kijiji' || 'padmapper' || 'zumper' || 'mls' || 'direct_tenant' || 'landlord_forward',
-    targetAd: 'unknown' || 'open_to_suggestions' || '<AD_ID>',
+    targetAd: 'UNKNOWN' || 'open_to_suggestions' || '<AD_ID>',
     supervisionSettings: {
-      ad_id: 'unknown' || 'open_to_suggestions' || '<AD_ID>',
+      ad_id: 'UNKNOWN' || 'open_to_suggestions' || '<AD_ID>',
       reviewer_emails: [],
       cc_emails: [],
     },
@@ -184,7 +185,7 @@ module.exports = function(event, context, callback){
                                               meta.fromKnownLandlord = results[0].known
                                               meta.emailClient = results[1]
                                               meta.leadChannel = results[2].channel.channel_name
-                                              meta.targetAd = results[3].found ? results[3].ad_id : 'unknown'
+                                              meta.targetAd = results[3].found ? results[3].ad_id : 'UNKNOWN'
                                               meta.supervisionSettings = results[3].supervision_settings
                                               console.log(meta)
                                               // save the knowledge history of every participant to dynamodb
@@ -211,15 +212,18 @@ module.exports = function(event, context, callback){
                                               // exchange original_emails for alias_emails
                                               return rdsAPI.grab_alias_emails(original_emails)
                                             })
-                                            .then((proxyPairs) => {
+                                            .then((aliasPairs) => {
                                               console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
-                                              console.log(proxyPairs)
-                                              if (meta.targetAd === 'unknown') {
+                                              console.log(aliasPairs)
+                                              if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
                                                 console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
-                                                return rerouteEmail.sendOutFallbackAgentEmail(meta, extractedS3Email, participants, proxyEmail, proxyPairs)
-                                              } else {
+                                                return rerouteEmail.sendOutFallbackAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
+                                              } else if (meta.targetAd) {
                                                 console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
-                                                return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, proxyPairs)
+                                                return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
+                                              } else {
+                                                console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
+                                                return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this lead to agent email')
                                               }
                                             })
                                             .then((data) => {
@@ -251,7 +255,18 @@ module.exports = function(event, context, callback){
                           return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
                         })
                         .then((data) => {
-                          return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                          meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
+                          meta.supervisionSettings = data.supervision_settings
+                          if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
+                            console.log('------ COULD NOT FIND A MATCHING AD_ID, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
+                            return Promise.reject('Could not find a matching ad_id for this agents email response to a lead')
+                          } else if (meta.targetAd) {
+                            console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
+                            return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                          } else {
+                            console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
+                            return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this agent to lead email')
+                          }
                         })
                         .then((data) => {
                           const response = {
@@ -265,6 +280,20 @@ module.exports = function(event, context, callback){
                         })
                         .catch((err) => {
                           callback(null, err)
+                        })
+          } else if (direction === 'fallbackAgentToLead') {
+            console.log('------ HANDLING A FALLBACK AGENT-->LEAD EMAIL ------')
+            console.log('------ FALLBACK AGENT EMAIL BEING REROUTED TO INTENDED RECIPIENTS ------')
+            let extractedS3Email
+            return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+                        .then((s3Email) => {
+                          return extractionAPI.extractEmail(s3Email)
+                        })
+                        .then(() => {
+                          return rerouteEmail.sendOutFallbackLeadEmail(extractedS3Email, participants, proxyEmail)
+                        })
+                        .catch((err) => {
+                          return Promise.reject(err)
                         })
           } else {
             console.log('------ CRITICAL FAILURE: COULD NOT DETERMINE THE DIRECTION OF THE EMAIL ------')
@@ -307,7 +336,7 @@ module.exports = function(event, context, callback){
               return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
             })
             .then((data) => {
-              meta.targetAd = data.found ? data.ad_id : 'unknown'
+              meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
               return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
             })
             .then((data) => {
