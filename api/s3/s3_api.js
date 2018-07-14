@@ -1,4 +1,8 @@
 const AWS = require('aws-sdk')
+const path = require('path')
+const pathToAWSConfig = path.join(__dirname, '../..', 'creds', process.env.NODE_ENV, 'aws_config.json')
+const aws_config = require(pathToAWSConfig)
+AWS.config.update(aws_config)
 
 module.exports.grabEmail = function(bucket, key){
   console.log(`------ GRABBING EMAIL FROM S3 at Bucket:${bucket} and Key:${key} ------`)

@@ -51,7 +51,7 @@ module.exports.extractParticipants = function(sesEmail) {
   console.log(`------ EXTRACTING PARTICIPANTS FROM THIS EMAIL ------`)
   // -------- TO ADDRESS -------- //
   const toAddresses = sesEmail.headers.filter((header) => {
-    return header.name.toLowerCase() === 'to'
+    return header.name.toLowerCase() === 'to' || header.name.toLowerCase() === 'x-forwarded-to'
   }).map((header) => {
     return module.exports.extractPeoples(header.value)
   })[0] || []

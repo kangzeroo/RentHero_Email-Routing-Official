@@ -243,6 +243,7 @@ module.exports.all_agent_emails = function(proxy_email) {
       Authorization: `Bearer xxxx`
     }
   }
+  console.log(proxy_email)
   const p = new Promise((res, rej) => {
     axios.post(`${RDS_MS}/all_agent_emails`, { proxy_email: proxy_email }, headers)
       .then((data) => {
