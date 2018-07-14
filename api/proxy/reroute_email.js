@@ -130,7 +130,7 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
               //         return loopFindPair(from, aliasPairs)
               //       }),
               from: proxyEmail,
-              replyTo: proxyEmail,
+              replyTo: [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
               to: [fallback_agent_email].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
                   // [fallback_agent_email].concat(participants.to.filter((to) => {
                   //   return to !== proxyEmail

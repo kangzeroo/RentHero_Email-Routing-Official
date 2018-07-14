@@ -1,6 +1,10 @@
 const axios = require('axios')
 const mailcomposer = require('mailcomposer')
+const path = require('path')
+const pathToAWSConfig = path.join(__dirname, '../..', 'creds', process.env.NODE_ENV, 'aws_config.json')
+const aws_config = require(pathToAWSConfig)
 const AWS = require('aws-sdk')
+AWS.config.update(aws_config)
 
 
 // From Agent to Lead

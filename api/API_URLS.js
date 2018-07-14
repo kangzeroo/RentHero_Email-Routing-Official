@@ -1,8 +1,8 @@
 
-// DEV
-module.exports.RDS_MS = 'https://renthero.host:4040'
-module.exports.DYN_MS = 'https://renthero.host:4040'
+// PROD
+module.exports.RDS_MS = 'https://rentheros.com:4040'
+module.exports.DYN_MS = 'https://rentheros.com:4040'
 
-// NGROK
+// DEV
 // module.exports.RDS_MS = 'https://e46f4bac.ngrok.io'
 // module.exports.DYN_MS = 'https://e46f4bac.ngrok.io'
