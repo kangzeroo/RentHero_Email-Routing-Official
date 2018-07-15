@@ -164,7 +164,7 @@ module.exports = function(event, context, callback){
           meta.messageDirection = direction
           if (direction === 'leadToAgent') {
             console.log('------ HANDLING A LEAD --> AGENT EMAIL ------')
-            return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
                         .then((s3Email) => {
                           return extractionAPI.extractEmail(s3Email)
                         })
@@ -246,7 +246,7 @@ module.exports = function(event, context, callback){
             // Forward this email back to all original recipients
             // should also check supervision_settings before actually sending out to leads
             let extractedS3Email
-            return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
                         .then((s3Email) => {
                           return extractionAPI.extractEmail(s3Email)
                         })
@@ -285,7 +285,7 @@ module.exports = function(event, context, callback){
             console.log('------ HANDLING A FALLBACK AGENT-->LEAD EMAIL ------')
             console.log('------ FALLBACK AGENT EMAIL BEING REROUTED TO INTENDED RECIPIENTS ------')
             let extractedS3Email
-            return s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
                         .then((s3Email) => {
                           return extractionAPI.extractEmail(s3Email)
                         })
@@ -329,7 +329,7 @@ module.exports = function(event, context, callback){
       console.log('------ SAVING THIS EMAIL TO KNOWLEDGE HISTORY BUT NOT DOING ANYTHING ELSE WITH IT ------')
       // No the proxy@renthero.ai email does not exist in [to:address] but does exist in [cc:address]
       // Simply save this email in the proxy's knowledge history
-      s3API.grabEmail(process.env.S3_BUCKET, `emails/${sesEmail.messageId}`)
+      s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
             .then((s3Email) => {
               return extractionAPI.extractEmail(s3Email)
             })
