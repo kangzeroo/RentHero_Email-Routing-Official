@@ -110,3 +110,25 @@ module.exports.collectKnowledgeHistory = function() {
   })
   return p
 }
+
+module.exports.save_cleaned_convo = function(item) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${DYN_MS}/save_cleaned_convo`, item, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/save_cleaned_convo ------`)
+        console.log(data.data)
+        res(data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/save_cleaned_convo')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
