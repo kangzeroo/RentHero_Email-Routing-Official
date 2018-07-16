@@ -38,7 +38,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       // the actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
       console.log('------ THIS EMAIL WAS NOT SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A REGULAR INQUIRY ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = Promise.resolve()
+      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
     }
     starterPoint.then(() => {
       console.log('------ GRABBING THE APPROPRIATE AGENT EMAIL FOR THIS AD_ID ------')
@@ -123,7 +123,7 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
       // The actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
       console.log('------ THIS EMAIL WAS NOT SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A REGULAR INQUIRY ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = Promise.resolve()
+      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
     }
     console.log('------ GRABBING THE FALLBACK AGENT EMAIL FOR THIS PROXY_EMAIL ------')
     starterPoint.then(() => {

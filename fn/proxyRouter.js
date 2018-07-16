@@ -119,6 +119,10 @@ module.exports = function(event, context, callback){
     alreadyHandled: false    // or true
   }
   console.log(meta)
+  console.log('------ PROXY, ALIAS, AGENT ------')
+  console.log(process.env.PROXY_EMAIL)
+  console.log(process.env.ALIAS_EMAIL)
+  console.log(process.env.AGENT_EMAIL)
   // ---------------------------------------------------------------
 
 

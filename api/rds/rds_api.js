@@ -311,7 +311,7 @@ module.exports.save_lead_to_db = function(channel_email, proxy_email, channel) {
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/save_lead_to_db`, { channel_email: channel_email, proxy_email: proxy_email, channel: channel }, headers)
+    axios.post(`${RDS_MS}/save_lead_to_db`, { channel_email: channel_email, proxy_email: proxy_email, channel: channel, creator: { id_type: 'PROXY_ROUTER', id: proxy_email } }, headers)
       .then((data) => {
         console.log(`------ Successful POST/save_lead_to_db ------`)
         console.log(data.data)
@@ -355,14 +355,14 @@ module.exports.get_proxy_id = function(proxy_email) {
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/proxy_email`, { proxy_email: proxy_email }, headers)
+    axios.post(`${RDS_MS}/get_proxy_id`, { proxy_email: proxy_email }, headers)
       .then((data) => {
-        console.log(`------ Successful POST/proxy_email ------`)
+        console.log(`------ Successful POST/get_proxy_id ------`)
         console.log(data.data)
         res(data.data.proxy_id)
       })
       .catch((err) => {
-        console.log('------> Failed POST/proxy_email')
+        console.log('------> Failed POST/get_proxy_id')
         console.log(err)
         rej(err)
       })
