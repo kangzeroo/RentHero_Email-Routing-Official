@@ -259,10 +259,10 @@ module.exports = function(event, context, callback){
                           meta.supervisionSettings = data.supervision_settings
                           if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
                             console.log('------ COULD NOT FIND A MATCHING AD_ID IN AGENT TO LEAD, LETTING THIS AGENT EMAIL BE FORWARDED ------')
-                            return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                            return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
                           } else if (meta.targetAd) {
                             console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
-                            return rerouteEmail.sendOutLeadEmail(extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                            return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
                           } else {
                             console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
                             return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this agent to lead email')
@@ -291,7 +291,7 @@ module.exports = function(event, context, callback){
                         })
                         .then((s3Email) => {
                           extractedS3Email = s3Email
-                          return rerouteEmail.sendOutFallbackLeadEmail(extractedS3Email, participants, proxyEmail)
+                          return rerouteEmail.sendOutFallbackLeadEmail(meta, extractedS3Email, participants, proxyEmail)
                         })
                         .catch((err) => {
                           return Promise.reject(err)

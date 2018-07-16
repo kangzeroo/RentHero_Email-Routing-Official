@@ -303,3 +303,69 @@ module.exports.all_proxy_fallback_emails = function(proxy_email) {
   })
   return p
 }
+
+module.exports.save_lead_to_db = function(channel_email, proxy_email, channel) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/save_lead_to_db`, { channel_email: channel_email, proxy_email: proxy_email, channel: channel }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/save_lead_to_db ------`)
+        console.log(data.data)
+        res(data.data.lead_id)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/save_lead_to_db')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+module.exports.get_lead_id_from_db = function(original_lead_email, proxyEmail) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/get_lead_id_from_db`, { lead_email: original_lead_email, proxy_email: proxyEmail }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/get_lead_id_from_db ------`)
+        console.log(data.data)
+        res(data.data.lead_id)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/get_lead_id_from_db')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+module.exports.get_proxy_id = function(proxy_email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/proxy_email`, { proxy_email: proxy_email }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/proxy_email ------`)
+        console.log(data.data)
+        res(data.data.proxy_id)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/proxy_email')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
