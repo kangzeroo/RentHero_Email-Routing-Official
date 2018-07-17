@@ -3,6 +3,7 @@ const sesAPI = require('../api/ses/ses_api')
 const rerouteEmail = require('../api/proxy/reroute_email')
 const s3API = require('../api/s3/s3_api')
 const dynAPI = require('../api/dyn/dyn_api')
+const FwdRequest = require('../api/proxy/forwarding_request')
 const extractionAPI = require('../api/extraction/extraction_api')
 
 const headers = {
@@ -130,225 +131,39 @@ module.exports = function(event, context, callback){
   // ---------------------------------------------------------------
   //                    THE MAIN LAMBDA FUNCTION
   // ---------------------------------------------------------------
-  console.log('------ CHECKING IF THERE ARE MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
-  // [EDGECASE - CannotHaveMultipleProxies]
-  if ((toProxies && toProxies[0] && toProxies.length > 1) || (ccProxies && ccProxies[0] && ccProxies.length > 1)) {
-    console.log('------ MULTIPLE RENTHERO PROXIES FOUND ------')
-    console.log('TO: ', toProxies)
-    console.log('CC: ', ccProxies)
-    console.log('------ SENDING OUT THE ERROR EMAIL TO ORIGINAL SENDER ------')
-    // Bad, we have multiple RentHero proxy emails in the same email thread (eg. heffe@renthero.ai, steve@renthero.ai)
-    // Send back SES email to original sender with "Unfortunetely you cannot have multiple RentHero assistants in the same email thread. Please resend your email with only 1 RentHero Assistant"
-    sesAPI.cannotHaveMultipleRentHeroProxies(participants)
-          .then((data) => {
-            const response = {
-              statusCode: 200,
-              body: JSON.stringify({
-                message: 'Successfully sent ERROR EMAIL to sender. Cannot have multiple RentHero proxy emails in the same thread.',
-                data: data,
-              })
-            }
-            callback(null, response)
+  console.log('------ CHECKING IF THIS INCOMING EMAIL IS A REQUEST FOR EMAIL FORWARDING ------')
+  if (FwdRequest.forwarding_request(participants)) {
+    // redirect the email forwarding requests to admin@renthero.com
+    FwdRequest.send_forwarding_request_email(`proxy_emails/${sesEmail.messageId}`, toProxies[0])
+      .then((data) => {
+        const response = {
+          statusCode: 200,
+          body: JSON.stringify({
+            message: 'Successfully sent the forwarding request to our admin email',
+            data: data,
           })
-          .catch((err) => {
-            callback(null, err)
-          })
+        }
+        callback(null, response)
+      })
+      .catch((err) => {
+        callback(null, err)
+      })
   } else {
-    console.log('------ AS EXPECTED, THERE ARE NOT MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
-    const proxyEmail = toProxies[0]
-    // Good, we only have 1 RentHero proxy involved in this email thread
-    // Yes the proxy@renthero.ai email exists in [to:address]
-    console.log('------ CHECKING IF RENTHERO PROXY IS EVER MENTIONED IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
-    if (toProxies && toProxies[0] && toProxies.length === 1) {
-      console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [TO:ADDRESS] ------')
-      // Check which direction the email is being sent. If its lead-->agent then we need to do lots of logic. If its agent-->lead then we simply reroute the email out
-      // Note that it is implied that any `supervision_settings` have already been applied to a lead-->agent email and thus when agent replies, the appropriate [to:address] and [cc:address] have been applied
-      extractionAPI.determineMessageDirection(participants.from, proxyEmail)
-        .then((direction) => {
-          meta.messageDirection = direction
-          if (direction === 'leadToAgent') {
-            console.log('------ HANDLING A LEAD --> AGENT EMAIL ------')
-            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
-                        .then((s3Email) => {
-                          return extractionAPI.extractEmail(s3Email)
-                        })
-                        .then((extractedS3Email) => {
-                              const checklist = [
-                                // results[0] - Is this a fwd from landlord or a completely seperate lead
-                                rdsAPI.checkIfKnownLandlordStaff(participants.from, proxyEmail),
-                                // results[1] - Is the lead's email client `gmail` or `outlook` ..etc
-                                extractionAPI.determineEmailClient(sesEmail),
-                                // results[2] - Where did this lead come from (eg. kijiji, zumper, direct_tenant)
-                                extractionAPI.determineLeadChannel(extractedS3Email, participants),
-                                // results[3] - which ad_id is this email referring to, and what are its supervision_settings?
-                                extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
-                              ]
-                              return Promise.all(checklist)
-                                            .then((results) => {
-                                              console.log('------ GOT LATEST CUSTOM META DATA ABOUT EMAIL ------')
-                                              meta.fromKnownLandlord = results[0].known
-                                              meta.emailClient = results[1]
-                                              meta.leadChannel = results[2].channel.channel_name
-                                              meta.targetAd = results[3].found ? results[3].ad_id : 'UNKNOWN'
-                                              meta.supervisionSettings = results[3].supervision_settings
-                                              console.log(meta)
-                                              // save the knowledge history of every participant to dynamodb
-                                              return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
-                                            })
-                                            .then((data) => {
-                                              console.log('------ SUCCESSFULLY SAVED KNOWLEDGE HISTORY OF PARTICIPANTS ------')
-                                              console.log('------ GRABBING ALL THE ORIGINAL EMAILS OF PARTICIPANTS ------')
-                                              // collect the original_emails to trade in for alias_emails
-                                              const original_emails = []
-                                              participants.to.forEach((to) => {
-                                                original_emails.push(to)
-                                              })
-                                              participants.from.forEach((from) => {
-                                                original_emails.push(from)
-                                              })
-                                              participants.cc.forEach((cc) => {
-                                                original_emails.push(cc)
-                                              })
-                                              participants.returnPath.forEach((returnPath) => {
-                                                original_emails.push(returnPath)
-                                              })
-                                              console.log('Original Emails: ', original_emails)
-                                              // exchange original_emails for alias_emails
-                                              return rdsAPI.grab_alias_emails(original_emails)
-                                            })
-                                            .then((aliasPairs) => {
-                                              console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
-                                              console.log(aliasPairs)
-                                              if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
-                                                console.log('------ COULD NOT FIND A MATCHING AD_ID IN LEAD TO AGENT, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
-                                                return rerouteEmail.sendOutFallbackProxyEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
-                                              } else if (meta.targetAd) {
-                                                console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
-                                                return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
-                                              } else {
-                                                console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
-                                                return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this lead to agent email')
-                                              }
-                                            })
-                                            .then((data) => {
-                                              return Promise.resolve(data)
-                                            })
-                                            .catch((err) => {
-                                              console.log('------ OH NO, AN ERROR OCCURRED ------')
-                                              console.log(err)
-                                              return Promise.reject(err)
-                                            })
-                        })
-                        .catch((err) => {
-                          console.log('------ OH NO, AN ERROR OCCURRED ------')
-                          console.log(err)
-                          return Promise.reject(err)
-                        })
-          } else if (direction === 'agentToLead') {
-            console.log('------ HANDLING AN AGENT-->LEAD EMAIL ------')
-            console.log('------ AGENT EMAIL BEING REROUTED TO ORIGINAL RECIPIENTS ------')
-            // Forward this email back to all original recipients
-            // should also check supervision_settings before actually sending out to leads
-            let extractedS3Email
-            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
-                        .then((s3Email) => {
-                          return extractionAPI.extractEmail(s3Email)
-                        })
-                        .then((s3Email) => {
-                          extractedS3Email = s3Email
-                          return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
-                        })
-                        .then((data) => {
-                          meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
-                          meta.supervisionSettings = data.supervision_settings
-                          if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
-                            console.log('------ COULD NOT FIND A MATCHING AD_ID IN AGENT TO LEAD, LETTING THIS AGENT EMAIL BE FORWARDED ------')
-                            return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
-                          } else if (meta.targetAd) {
-                            console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
-                            return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
-                          } else {
-                            console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
-                            return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this agent to lead email')
-                          }
-                        })
-                        .then((data) => {
-                          const response = {
-                            statusCode: 200,
-                            body: JSON.stringify({
-                              message: 'Email was successfully routed from agent to lead',
-                              data: data,
-                            })
-                          }
-                          callback(null, response)
-                        })
-                        .catch((err) => {
-                          callback(null, err)
-                        })
-          } else if (direction === 'fallbackAgentToLead') {
-            console.log('------ HANDLING A FALLBACK AGENT-->LEAD EMAIL ------')
-            console.log('------ FALLBACK AGENT EMAIL BEING REROUTED TO INTENDED RECIPIENTS ------')
-            let extractedS3Email
-            return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
-                        .then((s3Email) => {
-                          return extractionAPI.extractEmail(s3Email)
-                        })
-                        .then((s3Email) => {
-                          extractedS3Email = s3Email
-                          return rerouteEmail.sendOutFallbackLeadEmail(meta, extractedS3Email, participants, proxyEmail)
-                        })
-                        .catch((err) => {
-                          return Promise.reject(err)
-                        })
-          } else {
-            console.log('------ CRITICAL FAILURE: COULD NOT DETERMINE THE DIRECTION OF THE EMAIL ------')
-            return Promise.reject('Could not determine which direction this email was going')
-          }
-        })
-        .then((results) => {
-          console.log('------ SUCCESS: DONE EVERYTHING ------')
-          const response = {
-            statusCode: 200,
-            body: JSON.stringify({
-              message: 'Successfully sent out all emails',
-              data: results,
-            }),
-          }
-          callback(null, response)
-        })
-        .catch((err) => {
-          console.log('------ OH NO, AN ERROR OCCURRED ------')
-          console.log(err)
-          const response = {
-            statusCode: 500,
-            body: JSON.stringify({
-              message: 'An error occurred!',
-              data: err,
-            }),
-          }
-          callback(null, response)
-        })
-    } else if (ccProxies && ccProxies[0] && ccProxies.length > 1) {
-      console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [CC:ADDRESS] ------')
-      console.log('------ SAVING THIS EMAIL TO KNOWLEDGE HISTORY BUT NOT DOING ANYTHING ELSE WITH IT ------')
-      // No the proxy@renthero.ai email does not exist in [to:address] but does exist in [cc:address]
-      // Simply save this email in the proxy's knowledge history
-      s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
-            .then((s3Email) => {
-              return extractionAPI.extractEmail(s3Email)
-            })
-            .then((extractedS3Email) => {
-              return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
-            })
-            .then((data) => {
-              meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
-              return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
-            })
+    console.log('------ CHECKING IF THERE ARE MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
+    // [EDGECASE - CannotHaveMultipleProxies]
+    if ((toProxies && toProxies[0] && toProxies.length > 1) || (ccProxies && ccProxies[0] && ccProxies.length > 1)) {
+      console.log('------ MULTIPLE RENTHERO PROXIES FOUND ------')
+      console.log('TO: ', toProxies)
+      console.log('CC: ', ccProxies)
+      console.log('------ SENDING OUT THE ERROR EMAIL TO ORIGINAL SENDER ------')
+      // Bad, we have multiple RentHero proxy emails in the same email thread (eg. heffe@renthero.ai, steve@renthero.ai)
+      // Send back SES email to original sender with "Unfortunetely you cannot have multiple RentHero assistants in the same email thread. Please resend your email with only 1 RentHero Assistant"
+      sesAPI.cannotHaveMultipleRentHeroProxies(participants)
             .then((data) => {
               const response = {
                 statusCode: 200,
                 body: JSON.stringify({
-                  message: 'Successfully saved knowledge history for this CCd proxy',
+                  message: 'Successfully sent ERROR EMAIL to sender. Cannot have multiple RentHero proxy emails in the same thread.',
                   data: data,
                 })
               }
@@ -358,8 +173,213 @@ module.exports = function(event, context, callback){
               callback(null, err)
             })
     } else {
-      console.log('------ NO THE RENTHERO PROXY WAS NOT FOUND IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
-      callback(null, 'No Matching Proxy [to:address] or [cc:address] found')
+      console.log('------ AS EXPECTED, THERE ARE NOT MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
+      const proxyEmail = toProxies[0]
+      // Good, we only have 1 RentHero proxy involved in this email thread
+      // Yes the proxy@renthero.ai email exists in [to:address]
+      console.log('------ CHECKING IF RENTHERO PROXY IS EVER MENTIONED IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
+      if (toProxies && toProxies[0] && toProxies.length === 1) {
+        console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [TO:ADDRESS] ------')
+        // Check which direction the email is being sent. If its lead-->agent then we need to do lots of logic. If its agent-->lead then we simply reroute the email out
+        // Note that it is implied that any `supervision_settings` have already been applied to a lead-->agent email and thus when agent replies, the appropriate [to:address] and [cc:address] have been applied
+        extractionAPI.determineMessageDirection(participants.from, proxyEmail)
+          .then((direction) => {
+            meta.messageDirection = direction
+            if (direction === 'leadToAgent') {
+              console.log('------ HANDLING A LEAD --> AGENT EMAIL ------')
+              return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
+                          .then((s3Email) => {
+                            return extractionAPI.extractEmail(s3Email)
+                          })
+                          .then((extractedS3Email) => {
+                                const checklist = [
+                                  // results[0] - Is this a fwd from landlord or a completely seperate lead
+                                  rdsAPI.checkIfKnownLandlordStaff(participants.from, proxyEmail),
+                                  // results[1] - Is the lead's email client `gmail` or `outlook` ..etc
+                                  extractionAPI.determineEmailClient(sesEmail),
+                                  // results[2] - Where did this lead come from (eg. kijiji, zumper, direct_tenant)
+                                  extractionAPI.determineLeadChannel(extractedS3Email, participants),
+                                  // results[3] - which ad_id is this email referring to, and what are its supervision_settings?
+                                  extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
+                                ]
+                                return Promise.all(checklist)
+                                              .then((results) => {
+                                                console.log('------ GOT LATEST CUSTOM META DATA ABOUT EMAIL ------')
+                                                meta.fromKnownLandlord = results[0].known
+                                                meta.emailClient = results[1]
+                                                meta.leadChannel = results[2].channel.channel_name
+                                                meta.targetAd = results[3].found ? results[3].ad_id : 'UNKNOWN'
+                                                meta.supervisionSettings = results[3].supervision_settings
+                                                console.log(meta)
+                                                // save the knowledge history of every participant to dynamodb
+                                                return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
+                                              })
+                                              .then((data) => {
+                                                console.log('------ SUCCESSFULLY SAVED KNOWLEDGE HISTORY OF PARTICIPANTS ------')
+                                                console.log('------ GRABBING ALL THE ORIGINAL EMAILS OF PARTICIPANTS ------')
+                                                // collect the original_emails to trade in for alias_emails
+                                                const original_emails = []
+                                                participants.to.forEach((to) => {
+                                                  original_emails.push(to)
+                                                })
+                                                participants.from.forEach((from) => {
+                                                  original_emails.push(from)
+                                                })
+                                                participants.cc.forEach((cc) => {
+                                                  original_emails.push(cc)
+                                                })
+                                                participants.returnPath.forEach((returnPath) => {
+                                                  original_emails.push(returnPath)
+                                                })
+                                                console.log('Original Emails: ', original_emails)
+                                                // exchange original_emails for alias_emails
+                                                return rdsAPI.grab_alias_emails(original_emails)
+                                              })
+                                              .then((aliasPairs) => {
+                                                console.log('------ SUCCESSFULLY SWITCHED OUT ORIGINAL EMAILS FOR PROXY EMAILS ------')
+                                                console.log(aliasPairs)
+                                                if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
+                                                  console.log('------ COULD NOT FIND A MATCHING AD_ID IN LEAD TO AGENT, NOW REROUTING EMAIL TO FALLBACK FLOW ------')
+                                                  return rerouteEmail.sendOutFallbackProxyEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
+                                                } else if (meta.targetAd) {
+                                                  console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
+                                                  return rerouteEmail.sendOutAgentEmail(meta, extractedS3Email, participants, proxyEmail, aliasPairs)
+                                                } else {
+                                                  console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
+                                                  return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this lead to agent email')
+                                                }
+                                              })
+                                              .then((data) => {
+                                                return Promise.resolve(data)
+                                              })
+                                              .catch((err) => {
+                                                console.log('------ OH NO, AN ERROR OCCURRED ------')
+                                                console.log(err)
+                                                return Promise.reject(err)
+                                              })
+                          })
+                          .catch((err) => {
+                            console.log('------ OH NO, AN ERROR OCCURRED ------')
+                            console.log(err)
+                            return Promise.reject(err)
+                          })
+            } else if (direction === 'agentToLead') {
+              console.log('------ HANDLING AN AGENT-->LEAD EMAIL ------')
+              console.log('------ AGENT EMAIL BEING REROUTED TO ORIGINAL RECIPIENTS ------')
+              // Forward this email back to all original recipients
+              // should also check supervision_settings before actually sending out to leads
+              let extractedS3Email
+              return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
+                          .then((s3Email) => {
+                            return extractionAPI.extractEmail(s3Email)
+                          })
+                          .then((s3Email) => {
+                            extractedS3Email = s3Email
+                            return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
+                          })
+                          .then((data) => {
+                            meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
+                            meta.supervisionSettings = data.supervision_settings
+                            if (meta.targetAd && meta.targetAd.toLowerCase() === 'UNKNOWN'.toLowerCase()) {
+                              console.log('------ COULD NOT FIND A MATCHING AD_ID IN AGENT TO LEAD, LETTING THIS AGENT EMAIL BE FORWARDED ------')
+                              return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                            } else if (meta.targetAd) {
+                              console.log('------ SUCCESSFULLY FOUND A MATCHING AD_ID, NOW REROUTING EMAIL TO NORMAL FLOW ------')
+                              return rerouteEmail.sendOutLeadEmail(meta, extractedS3Email, data.supervision_settings, participants, proxyEmail)
+                            } else {
+                              console.log('------ TARGET AD (AD_ID) IS UNDEFINED OR NULL ------')
+                              return Promise.reject('meta.targetAd (aka ad_id) is null or undefined for this agent to lead email')
+                            }
+                          })
+                          .then((data) => {
+                            const response = {
+                              statusCode: 200,
+                              body: JSON.stringify({
+                                message: 'Email was successfully routed from agent to lead',
+                                data: data,
+                              })
+                            }
+                            callback(null, response)
+                          })
+                          .catch((err) => {
+                            callback(null, err)
+                          })
+            } else if (direction === 'fallbackAgentToLead') {
+              console.log('------ HANDLING A FALLBACK AGENT-->LEAD EMAIL ------')
+              console.log('------ FALLBACK AGENT EMAIL BEING REROUTED TO INTENDED RECIPIENTS ------')
+              let extractedS3Email
+              return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
+                          .then((s3Email) => {
+                            return extractionAPI.extractEmail(s3Email)
+                          })
+                          .then((s3Email) => {
+                            extractedS3Email = s3Email
+                            return rerouteEmail.sendOutFallbackLeadEmail(meta, extractedS3Email, participants, proxyEmail)
+                          })
+                          .catch((err) => {
+                            return Promise.reject(err)
+                          })
+            } else {
+              console.log('------ CRITICAL FAILURE: COULD NOT DETERMINE THE DIRECTION OF THE EMAIL ------')
+              return Promise.reject('Could not determine which direction this email was going')
+            }
+          })
+          .then((results) => {
+            console.log('------ SUCCESS: DONE EVERYTHING ------')
+            const response = {
+              statusCode: 200,
+              body: JSON.stringify({
+                message: 'Successfully sent out all emails',
+                data: results,
+              }),
+            }
+            callback(null, response)
+          })
+          .catch((err) => {
+            console.log('------ OH NO, AN ERROR OCCURRED ------')
+            console.log(err)
+            const response = {
+              statusCode: 500,
+              body: JSON.stringify({
+                message: 'An error occurred!',
+                data: err,
+              }),
+            }
+            callback(null, response)
+          })
+      } else if (ccProxies && ccProxies[0] && ccProxies.length > 1) {
+        console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [CC:ADDRESS] ------')
+        console.log('------ SAVING THIS EMAIL TO KNOWLEDGE HISTORY BUT NOT DOING ANYTHING ELSE WITH IT ------')
+        // No the proxy@renthero.ai email does not exist in [to:address] but does exist in [cc:address]
+        // Simply save this email in the proxy's knowledge history
+        s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
+              .then((s3Email) => {
+                return extractionAPI.extractEmail(s3Email)
+              })
+              .then((extractedS3Email) => {
+                return extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail)
+              })
+              .then((data) => {
+                meta.targetAd = data.found ? data.ad_id : 'UNKNOWN'
+                return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)
+              })
+              .then((data) => {
+                const response = {
+                  statusCode: 200,
+                  body: JSON.stringify({
+                    message: 'Successfully saved knowledge history for this CCd proxy',
+                    data: data,
+                  })
+                }
+                callback(null, response)
+              })
+              .catch((err) => {
+                callback(null, err)
+              })
+      } else {
+        console.log('------ NO THE RENTHERO PROXY WAS NOT FOUND IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
+        callback(null, 'No Matching Proxy [to:address] or [cc:address] found')
+      }
     }
   }
 }
