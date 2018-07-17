@@ -48,7 +48,7 @@ module.exports.send_forwarding_request_email = function(s3_email_location, proxy
             }) : []
           }
           const mail = mailcomposer(params)
-          console.log('------ CREATED THE RAW LEAD->FALLBACK AGENT EMAIL TO BE SENT OUT ------')
+          console.log('------ CREATED THE FORWARDING REQUEST EMAIL TO BE SENT OUT ------')
           console.log(params)
           console.log(mail)
           return sesAPI.sendForthEmails(mail)
