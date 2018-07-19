@@ -29,16 +29,17 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
     //     2. lead_channel - requires that some emails be sent to a custom REST endpoint for processing. These REST endpoints differ per lead_channel. (For now we skip)
 
     let starterPoint
+    let agent_email
     if (meta.fromKnownLandlord) {
       // we can assume that this is a message forwarded to the proxy, and thus should reroute accordingly (find proof of FWD in Body and set to:address as the fwd.history[0].from)
       console.log('------ THIS EMAIL WAS SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A FORWARDED INQUIRY. CHECK THE FWD BODY FOR A TO:ADDRESS TO AUTO-RESPOND TO ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
+      starterPoint = Promise.resolve()
     } else {
       // the actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
       console.log('------ THIS EMAIL WAS NOT SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A REGULAR INQUIRY ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
+      starterPoint = Promise.resolve()
     }
     starterPoint.then(() => {
       console.log('------ GRABBING THE APPROPRIATE AGENT EMAIL FOR THIS AD_ID ------')
@@ -46,7 +47,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
     })
     .then((email) => {
       console.log('------ FOUND THE APPROPRIATE AGENT EMAIL ------')
-      const agent_email = email
+      agent_email = email
       console.log(agent_email)
       const params = {}
       // --> LEAD EMAIL (SENDER)
@@ -93,6 +94,9 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       console.log(mail)
       console.log(mail._headers)
       return sesAPI.sendForthEmails(mail)
+    })
+    .then((data) => {
+      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email)
     })
     .then((data) => {
       res(data)
@@ -184,6 +188,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
     console.log('extractedS3Email: ', extractedS3Email)
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
+    const agentEmail = participants.from[0]
     const alias_emails = []
     participants.to.filter((to) => {
       return to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && to.indexOf('TAG___') === -1
@@ -239,9 +244,6 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
             console.log('------ GOT THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
             console.log(aliasPairs)
             console.log(loopFindPair(lead_email, aliasPairs))
-            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail)
-          })
-          .then(() => {
             const params = {
               from: proxyEmail,
               replyTo: supervision_settings.reviewer_emails && supervision_settings.reviewer_emails.length > 0
@@ -280,6 +282,9 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
             return sesAPI.sendForthEmails(mail)
           })
           .then((data) => {
+            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
+          })
+          .then((data) => {
             res(data)
           })
           .catch((err) => {
@@ -296,6 +301,7 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
     console.log('extractedS3Email: ', extractedS3Email)
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
+    const agentEmail = participants.from[0]
     const alias_emails = []
     participants.to.filter((to) => {
       return to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 && to.indexOf('TAG___') === -1
@@ -339,9 +345,6 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
             console.log('------ GOT THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
             console.log(aliasPairs)
             console.log(loopFindPair(lead_email, aliasPairs))
-            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail)
-          })
-          .then(() => {
             const params = {
               from: proxyEmail,
               replyTo: proxyEmail,
@@ -364,6 +367,9 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
             console.log(params)
             console.log(mail)
             return sesAPI.sendForthEmails(mail)
+          })
+          .then((data) => {
+            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
           })
           .then((data) => {
             res(data)

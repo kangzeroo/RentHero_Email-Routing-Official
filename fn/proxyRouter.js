@@ -146,7 +146,7 @@ module.exports = function(event, context, callback){
         callback(null, response)
       })
       .catch((err) => {
-        callback(null, err)
+        reportIssue(callback, err, context)
       })
   } else {
     console.log('------ CHECKING IF THERE ARE MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
@@ -170,7 +170,7 @@ module.exports = function(event, context, callback){
               callback(null, response)
             })
             .catch((err) => {
-              callback(null, err)
+              reportIssue(callback, err, context)
             })
     } else {
       console.log('------ AS EXPECTED, THERE ARE NOT MULTIPLE RENTHERO PROXIES IN THIS EMAIL ------')
@@ -253,13 +253,13 @@ module.exports = function(event, context, callback){
                                                 return Promise.resolve(data)
                                               })
                                               .catch((err) => {
-                                                console.log('------ OH NO, AN ERROR OCCURRED ------')
+                                                console.log('------ OH NO, AN ERROR OCCURRED (1) ------')
                                                 console.log(err)
                                                 return Promise.reject(err)
                                               })
                           })
                           .catch((err) => {
-                            console.log('------ OH NO, AN ERROR OCCURRED ------')
+                            console.log('------ OH NO, AN ERROR OCCURRED (2) ------')
                             console.log(err)
                             return Promise.reject(err)
                           })
@@ -302,7 +302,7 @@ module.exports = function(event, context, callback){
                             callback(null, response)
                           })
                           .catch((err) => {
-                            callback(null, err)
+                            reportIssue(callback, err, context)
                           })
             } else if (direction === 'fallbackAgentToLead') {
               console.log('------ HANDLING A FALLBACK AGENT-->LEAD EMAIL ------')
@@ -336,16 +336,16 @@ module.exports = function(event, context, callback){
             callback(null, response)
           })
           .catch((err) => {
-            console.log('------ OH NO, AN ERROR OCCURRED ------')
+            console.log('------ OH NO, AN ERROR OCCURRED (3) ------')
             console.log(err)
             const response = {
               statusCode: 500,
               body: JSON.stringify({
                 message: 'An error occurred!',
-                data: err,
+                data: err.data ? err.data : `An error occurred. Check AWS Cloudwatch with RequestID: ${context.awsRequestId} and LogStreamName: ${context.logStreamName}`,
               }),
             }
-            callback(null, response)
+            reportIssue(callback, response, context)
           })
       } else if (ccProxies && ccProxies[0] && ccProxies.length > 1) {
         console.log('------ YES THE RENTHERO PROXY WAS FOUND IN THE [CC:ADDRESS] ------')
@@ -374,12 +374,25 @@ module.exports = function(event, context, callback){
                 callback(null, response)
               })
               .catch((err) => {
-                callback(null, err)
+                reportIssue(callback, err, context)
               })
       } else {
         console.log('------ NO THE RENTHERO PROXY WAS NOT FOUND IN THE [TO:ADDRESS] OR [CC:ADDRESS] ------')
-        callback(null, 'No Matching Proxy [to:address] or [cc:address] found')
+        reportIssue(callback, 'No Matching Proxy [to:address] or [cc:address] found', context)
       }
     }
   }
+}
+
+const reportIssue = (callback, err, context) => {
+  console.log('------ REPORTING AN ISSUE... ------')
+  sesAPI.sendErrorReportEmail(err, context)
+    .then((data) => {
+      callback(null, err)
+    })
+    .catch((fail) => {
+      console.log('------ COULD NOT REPORT AN ISSUE... ------')
+      console.log(fail)
+      callback(null, fail)
+    })
 }
