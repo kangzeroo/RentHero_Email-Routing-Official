@@ -308,7 +308,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
 
 // Determine which ad_id this email is referring to, and grab its `supervision_settings`
 // This is a dynamically changing value, so we must prioritize our estimate confidences
-module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Email, participants, proxy_email) {
+module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Email, participants, proxy_email, proxy_id) {
   const p = new Promise((res, rej) => {
     console.log(`------ DETERMINING WHICH AD_ID IS THE TARGET AD FOR THIS EMAIL ------`)
 
@@ -331,7 +331,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
     console.log(`------ GETTING 3 TYPES OF HINTS TO DETERMINE AD_ID ------`)
     const arrayPromises = [
       // KNOWN_AD_URLS
-      rdsAPI.fuzzysearch_ad_urls(proxy_email, extractedS3Email)
+      rdsAPI.fuzzysearch_ad_urls(proxy_id, extractedS3Email)
               .then((results) => {
                 return Promise.resolve(results)
               })
@@ -339,7 +339,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
                 return Promise.reject(err)
               }),
       // KNOWN_AD_ADDRESSES
-      rdsAPI.fuzzysearch_ad_addresses(proxy_email, extractedS3Email)
+      rdsAPI.fuzzysearch_ad_addresses(proxy_id, extractedS3Email)
               .then((results) => {
                 return Promise.resolve(results)
               })

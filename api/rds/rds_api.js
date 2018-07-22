@@ -4,7 +4,7 @@ const Fuzzy = require('../fuzzysearch/fuzzysearch_api')
 const Regexr = require('../extraction/regex_api')
 
 // checks if any of the from_emails are from a landlord staff account that is known for this proxy
-module.exports.checkIfKnownLandlordStaff = function(from_emails, proxy_email) {
+module.exports.checkIfKnownLandlordStaff = function(from_emails, proxy_id) {
   // from_emails = [emailA, emailB]
   const headers = {
     headers: {
@@ -12,7 +12,7 @@ module.exports.checkIfKnownLandlordStaff = function(from_emails, proxy_email) {
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/all_staffs_for_proxy`, { proxy_email: proxy_email }, headers)
+    axios.post(`${RDS_MS}/all_staffs_for_proxy`, { proxy_id: proxy_id }, headers)
       .then((data) => {
         console.log(`------ Successful POST/all_staffs_for_proxy ------`)
         console.log(data.data)
@@ -93,7 +93,7 @@ module.exports.grab_original_emails = function(alias_emails) {
 }
 
 // using just the proxy_email and some URLS from the incoming email, query for similar URL links on the advertisement_links table
-module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
+module.exports.fuzzysearch_ad_urls = function(proxy_id, extractedS3Email) {
   console.log(`------ FUZZY SEARCHING ON AD URLS ------`)
   // from_emails = [emailA, emailB]
   const headers = {
@@ -102,7 +102,7 @@ module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/fuzzysearch_ad_urls`, { proxy_email: proxy_email }, headers)
+    axios.post(`${RDS_MS}/fuzzysearch_ad_urls`, { proxy_id: proxy_id }, headers)
       .then((data) => {
         console.log(`------ Successful POST/fuzzysearch_ad_urls ------`)
         const found_urls = Regexr.findURLS(extractedS3Email.textAsHtml)
@@ -128,7 +128,7 @@ module.exports.fuzzysearch_ad_urls = function(proxy_email, extractedS3Email) {
 }
 
 // using just the proxy_email and some parsed addresses from the incoming email, query for similar URL links on the advertisement_links table
-module.exports.fuzzysearch_ad_addresses = function(proxy_email, extractedS3Email) {
+module.exports.fuzzysearch_ad_addresses = function(proxy_id, extractedS3Email) {
   console.log(`------ FUZZY SEARCHING ON AD ADDRESSES ------`)
   // from_emails = [emailA, emailB]
   const headers = {
@@ -137,7 +137,7 @@ module.exports.fuzzysearch_ad_addresses = function(proxy_email, extractedS3Email
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/fuzzysearch_ad_addresses`, { proxy_email: proxy_email }, headers)
+    axios.post(`${RDS_MS}/fuzzysearch_ad_addresses`, { proxy_id: proxy_id }, headers)
       .then((data) => {
         console.log(`------ Successful POST/fuzzysearch_ad_addresses ------`)
         const found_addresses = Regexr.findAddresses(extractedS3Email.textAsHtml)
