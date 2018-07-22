@@ -42,26 +42,14 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
           SENDER_ID: lead_id,
           SENDER_CONTACT: lead_email,
           SENDER_TYPE: 'LEAD_ID',
-          RECEIVER_ID: proxy_id,
-          RECEIVER_CONTACT: proxyEmail,
-          RECEIVER_TYPE: 'PROXY_ID',
+          RECEIVER_ID: agent_id,
+          RECEIVER_CONTACT: agentEmail,
+          RECEIVER_TYPE: 'AGENT_ID',
           TIMESTAMP: moment().toISOString(),
           MEDIUM: 'EMAIL',
-          SAID_BY: 'LEAD',
+          PROXY_ID: proxy_id,
+          PROXY_CONTACT: proxyEmail,
           MESSAGE: message
-
-         'SES_MESSAGE_ID': 'DSAFJLSDFJLSD',
-         'SENDER_ID': 'adsfsdf-43ifhsdf-sdfho',
-         'SENDER_CONTACT': 'agent@renthero.tech' || '5194673367',
-         'SENDER_TYPE': 'AGENT_ID',
-         'RECEIVER_ID': 'ljasdf-43g-dfgfs-sf',
-         'RECEIVER_CONTACT': 'jlasjdf@kts.kijiji.ca' || '5194675467',
-         'RECEIVER_TYPE': 'LEAD_ID',
-         'TIMESTAMP': 'moment().toISOString()',
-         'MEDIUM': 'EMAIL' || 'SMS',
-         'PROXY_ID': 1,
-         'PROXY_CONTACT': 'alsdjfl@flexximail.org',
-         'MESSAGE': 'hello, this is the message'
         })
       })
       .then(() => {
@@ -78,6 +66,8 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
   const p = new Promise((res, rej) => {
     let convo
     let lead_id
+    let proxy_id
+    let agent_id
     rdsAPI.get_lead_id_from_db(original_lead_email, proxyEmail)
       .then((found_lead_id) => {
         let lead_id = found_lead_id
@@ -87,17 +77,25 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
         convo = clean_convo
         return rdsAPI.get_proxy_id(proxyEmail)
       })
-      .then((proxy_id) => {
+      .then((pid) => {
+        proxy_id = pid
+        return rdsAPI.get_agent_id(agentEmail)
+      })
+      .then((aid) => {
+        agent_id = aid
         const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' ') : ''
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: meta.email_id,
-          SENDER_ID: proxy_id,
-          SENDER_CONTACT: proxyEmail,
+          SENDER_ID: agent_id,
+          SENDER_CONTACT: agentEmail,
+          SENDER_TYPE: 'AGENT_ID',
           RECEIVER_ID: lead_id,
           RECEIVER_CONTACT: original_lead_email,
+          RECEIVER_TYPE: 'LEAD_ID',
           TIMESTAMP: moment().toISOString(),
           MEDIUM: 'EMAIL',
-          SAID_BY: 'AGENT',
+          PROXY_ID: proxy_id,
+          PROXY_CONTACT: proxyEmail,
           MESSAGE: message
         })
       })
