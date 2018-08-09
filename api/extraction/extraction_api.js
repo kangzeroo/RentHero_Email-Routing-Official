@@ -477,26 +477,40 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
 }
 
 module.exports.determineLeadContactInfo = function(extractedS3Email, participants, proxy_email, proxy_id, leadChannel) {
+  console.log(`------ determineLeadContactInfo ------`)
+  console.log(leadChannel)
   const p = new Promise((res, rej) => {
+    let matchedChannel
     LEAD_CHANNELS().lead_channels.forEach((lead_channel) => {
       if (lead_channel.channel_name === leadChannel) {
-        LEAD_CHANNELS_EXTRACTOR[lead_channel.channel_name](extractedS3Email)
-          .then((data) => {
-            console.log(`------ EXTRACTING LEAD CONTACT INFO! ------`)
-            console.log(data)
-            res({
-              first_name: data.first_name,
-              last_name: data.last_name,
-              actual_email: data.actual_email,
-              actual_phone: data.actual_phone
-            })
-          }).catch((err) => {
-            console.log(`------ AN ERROR OCCURRED EXTRACTING LEAD CONTACT INFO! ------`)
-            console.log(err)
-            rej(err)
-          })
+        matchedChannel = leadChannel
       }
     })
+    if (matchedChannel) {
+      LEAD_CHANNELS_EXTRACTOR[matchedChannel](extractedS3Email)
+        .then((data) => {
+          console.log(`------ EXTRACTING LEAD CONTACT INFO! ------`)
+          console.log(data)
+          res({
+            first_name: data.first_name,
+            last_name: data.last_name,
+            actual_email: data.actual_email,
+            actual_phone: data.actual_phone
+          })
+        }).catch((err) => {
+          console.log(`------ AN ERROR OCCURRED EXTRACTING LEAD CONTACT INFO! ------`)
+          console.log(err)
+          rej(err)
+        })
+    } else {
+      console.log('Could not match a known channel!')
+      res({
+        first_name: 'Unknown Name',
+        last_name: '',
+        actual_email: '',
+        actual_phone: ''
+      })
+    }
   })
   return p
 }

@@ -208,8 +208,8 @@ module.exports = function(event, context, callback){
                             // Where did this lead come from (eg. kijiji, zumper, direct_tenant)
                             return extractionAPI.determineLeadChannel(extractedS3Email, participants)
                           })
-                          .then((channel) => {
-                              meta.leadChannel = channel.channel_name
+                          .then((data) => {
+                              meta.leadChannel = data.channel
                               const checklist = [
                                 // results[0] - Is this a fwd from landlord or a completely seperate lead
                                 rdsAPI.checkIfKnownLandlordStaff(participants.from, proxy_id),
@@ -218,7 +218,7 @@ module.exports = function(event, context, callback){
                                 // results[2] - which ad_id is this email referring to, and what are its supervision_settings?
                                 extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail, proxy_id),
                                 // results[3] - what is the phone number of this lead?
-                                extractionAPI.determineLeadContactInfo(extractedS3Email, participants, proxyEmail, proxy_id, meta.leadChannel),
+                                extractionAPI.determineLeadContactInfo(extractedS3Email, participants, proxyEmail, proxy_id, meta.leadChannel.channel_name),
                               ]
                               return Promise.all(checklist)
                                             .then((results) => {
