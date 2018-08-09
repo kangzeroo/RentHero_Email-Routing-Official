@@ -1,5 +1,5 @@
 const path = require('path')
-const pathToTwilioConfig = path.join(__dirname, './', 'credentials', process.env.NODE_ENV, 'twilio_config.json')
+const pathToTwilioConfig = path.join(__dirname, './', 'creds', process.env.NODE_ENV, 'twilio_config.json')
 const twilio_config = require(pathToTwilioConfig)
 const twilio = require('twilio')
 
