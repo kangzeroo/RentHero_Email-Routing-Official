@@ -1,5 +1,5 @@
 const axios = require('axios')
-const DYN_MS = require('../API_URLS').DYN_MS
+const DYN_MS = require(`../../creds/${process.env.NODE_ENV}/API_URLS`).DYN_MS
 const moment = require('moment')
 const uuid = require('uuid')
 const extractionAPI = require('../extraction/extraction_api')

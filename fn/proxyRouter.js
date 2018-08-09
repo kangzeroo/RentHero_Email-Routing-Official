@@ -116,6 +116,12 @@ module.exports = function(event, context, callback){
       reviewer_emails: [],
       cc_emails: [],
     },
+    about_lead: {
+      first_name: 'Steve' || 'Unknown',
+      last_name: 'Carool' || 'Name',
+      actual_email: 'steve.scar@gmail.com' || '',
+      actual_phone: '4563457456' || '',
+    },
     participants: participants,
     alreadyHandled: false    // or true
   }
@@ -183,6 +189,7 @@ module.exports = function(event, context, callback){
         // Check which direction the email is being sent. If its lead-->agent then we need to do lots of logic. If its agent-->lead then we simply reroute the email out
         // Note that it is implied that any `supervision_settings` have already been applied to a lead-->agent email and thus when agent replies, the appropriate [to:address] and [cc:address] have been applied
         let extractedS3Email
+        let proxy_id
         extractionAPI.determineMessageDirection(participants.from, proxyEmail)
           .then((direction) => {
             meta.messageDirection = direction
@@ -196,25 +203,34 @@ module.exports = function(event, context, callback){
                               extractedS3Email = extrS3Email
                               return rdsAPI.get_proxy_id(proxyEmail)
                           })
-                          .then((proxy_id) => {
+                          .then((pid) => {
+                            proxy_id = pid
+                            // Where did this lead come from (eg. kijiji, zumper, direct_tenant)
+                            return extractionAPI.determineLeadChannel(extractedS3Email, participants)
+                          })
+                          .then((channel) => {
+                              meta.leadChannel = channel.channel_name
                               const checklist = [
                                 // results[0] - Is this a fwd from landlord or a completely seperate lead
                                 rdsAPI.checkIfKnownLandlordStaff(participants.from, proxy_id),
                                 // results[1] - Is the lead's email client `gmail` or `outlook` ..etc
                                 extractionAPI.determineEmailClient(sesEmail),
-                                // results[2] - Where did this lead come from (eg. kijiji, zumper, direct_tenant)
-                                extractionAPI.determineLeadChannel(extractedS3Email, participants),
-                                // results[3] - which ad_id is this email referring to, and what are its supervision_settings?
-                                extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail, proxy_id)
+                                // results[2] - which ad_id is this email referring to, and what are its supervision_settings?
+                                extractionAPI.determineTargetAdAndSupervisionSettings(extractedS3Email, participants, proxyEmail, proxy_id),
+                                // results[3] - what is the phone number of this lead?
+                                extractionAPI.determineLeadContactInfo(extractedS3Email, participants, proxyEmail, proxy_id, meta.leadChannel),
                               ]
                               return Promise.all(checklist)
                                             .then((results) => {
                                               console.log('------ GOT LATEST CUSTOM META DATA ABOUT EMAIL ------')
                                               meta.fromKnownLandlord = results[0].known
                                               meta.emailClient = results[1]
-                                              meta.leadChannel = results[2].channel.channel_name
-                                              meta.targetAd = results[3].found ? results[3].ad_id : 'UNKNOWN'
-                                              meta.supervisionSettings = results[3].supervision_settings
+                                              meta.targetAd = results[2].found ? results[2].ad_id : 'UNKNOWN'
+                                              meta.supervisionSettings = results[2].supervision_settings
+                                              meta.about_lead.actual_phone = results[3].actual_phone
+                                              meta.about_lead.actual_email = results[3].actual_email
+                                              meta.about_lead.first_name = results[3].first_name
+                                              meta.about_lead.last_name = results[3].last_name
                                               console.log(meta)
                                               // save the knowledge history of every participant to dynamodb
                                               return dynAPI.saveKnowledgeHistory(sesEmail, meta, participants, proxyEmail)

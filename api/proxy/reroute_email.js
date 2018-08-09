@@ -118,22 +118,24 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
     console.log('proxyEmail: ', proxyEmail)
     console.log('aliasPairs: ', aliasPairs)
     let starterPoint
+    let fallback_agent_email
     if (meta.fromKnownLandlord) {
       // we can assume that this is a message forwarded to the proxy, and thus should reroute accordingly (find proof of FWD in Body and set to:address as the fwd.history[0].from)
       console.log('------ THIS EMAIL WAS SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A FORWARDED INQUIRY. CHECK THE FWD BODY FOR A TO:ADDRESS TO AUTO-RESPOND TO ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
+      starterPoint = Promise.resolve()
     } else {
       // The actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
       console.log('------ THIS EMAIL WAS NOT SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A REGULAR INQUIRY ------')
       console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
-      starterPoint = leadAPI.handleIncomingLead(meta, participants, proxyEmail)
+      starterPoint = Promise.resolve()
     }
     console.log('------ GRABBING THE FALLBACK AGENT EMAIL FOR THIS PROXY_EMAIL ------')
     starterPoint.then(() => {
       return rdsAPI.getDefaultFallbackAgentEmailForProxy(proxyEmail)
     })
-    .then((fallback_agent_email) => {
+    .then((agent_email) => {
+      fallback_agent_email = agent_email
       console.log('------ FOUND THE FALLBACK AGENT EMAIL FOR THIS AD_ID ------')
       console.log('fallback_agent_email: ', fallback_agent_email)
       // CC (will also duplicate the from:address, with a `TAG___`)
@@ -170,6 +172,9 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
       console.log(params)
       console.log(mail)
       return sesAPI.sendForthEmails(mail)
+    })
+    .then((data) => {
+      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, fallback_agent_email)
     })
     .then((data) => {
       res(data)

@@ -1,5 +1,5 @@
 const axios = require('axios')
-const RDS_MS = require('../API_URLS').RDS_MS
+const RDS_MS = require(`../../creds/${process.env.NODE_ENV}/API_URLS`).RDS_MS
 const Fuzzy = require('../fuzzysearch/fuzzysearch_api')
 const Regexr = require('../extraction/regex_api')
 
@@ -260,6 +260,29 @@ module.exports.all_agent_emails = function(proxy_email) {
   return p
 }
 
+module.exports.all_staff_agent_emails = function(proxy_email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  console.log(proxy_email)
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/all_staff_agent_emails`, { proxy_email: proxy_email }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/all_staff_agent_emails ------`)
+        console.log(data.data)
+        res(data.data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/all_staff_agent_emails')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
 module.exports.all_ad_fallback_emails = function(proxy_email) {
   const headers = {
     headers: {
@@ -304,14 +327,14 @@ module.exports.all_proxy_fallback_emails = function(proxy_email) {
   return p
 }
 
-module.exports.save_lead_to_db = function(channel_email, proxy_email, channel) {
+module.exports.save_lead_to_db = function(channel_email, proxy_email, channel, about_lead) {
   const headers = {
     headers: {
       Authorization: `Bearer xxxx`
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${RDS_MS}/save_lead_to_db`, { channel_email: channel_email, proxy_email: proxy_email, channel: channel, creator: { id_type: 'PROXY_ROUTER', id: proxy_email } }, headers)
+    axios.post(`${RDS_MS}/save_lead_to_db`, { channel_email: channel_email, proxy_email: proxy_email, channel: channel, about_lead: about_lead, creator: { id_type: 'PROXY_ROUTER', id: proxy_email } }, headers)
       .then((data) => {
         console.log(`------ Successful POST/save_lead_to_db ------`)
         console.log(data.data)
@@ -363,6 +386,28 @@ module.exports.get_proxy_id = function(proxy_email) {
       })
       .catch((err) => {
         console.log('------> Failed POST/get_proxy_id')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+module.exports.get_agent_id = function(agent_email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/get_agent_id`, { agent_email: agent_email }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/get_agent_id ------`)
+        console.log(data.data)
+        res(data.data.agent_id)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/get_agent_id')
         console.log(err)
         rej(err)
       })
