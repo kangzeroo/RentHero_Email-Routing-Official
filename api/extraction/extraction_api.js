@@ -3,6 +3,7 @@ const rdsAPI = require('../rds/rds_api')
 const dynAPI = require('../dyn/dyn_api')
 const Fuzzy = require('../fuzzysearch/fuzzysearch_api')
 const LEAD_CHANNELS = require(`../../creds/${process.env.NODE_ENV}/lead_channels`).lead_channels
+const LEAD_CHANNELS_EXTRACTOR = require(`../../creds/${process.env.NODE_ENV}/lead_channels_extractors`)
 const EMAIL_CLIENTS = require(`../../creds/${process.env.NODE_ENV}/email_clients`).email_clients
 
 // Grab the email saved to S3
@@ -141,11 +142,16 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
   const p = new Promise((res, rej) => {
     let direction = 'leadToAgent'
     let agent_emails = []
+    let staff_agents = []
     let ad_fallback_emails = []
     let proxy_fallback_emails = []
     rdsAPI.all_agent_emails(proxy_email)
           .then((x) => {
             agent_emails = x
+            return rdsAPI.all_staff_agent_emails(proxy_email)
+          })
+          .then((x) => {
+            staff_agents = x
             return rdsAPI.all_ad_fallback_emails(proxy_email)
           })
           .then((x) => {
@@ -157,6 +163,13 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
             from_emails.forEach((from) => {
               agent_emails.forEach((ag) => {
                 if (from === ag.email) {
+                  direction = 'agentToLead'
+                }
+              })
+            })
+            from_emails.forEach((from) => {
+              staff_agents.forEach((sa) => {
+                if (from === sa.email) {
                   direction = 'agentToLead'
                 }
               })
@@ -271,7 +284,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
       // current_score increases by 1 for each mention of a hint word
       lead_channel.channel_hints.forEach((hint_word) => {
         let regex = new RegExp(hint_word, 'ig')
-        let matches = extractedS3Email.textAsHtml.match(regex) || []
+        let matches = extractedS3Email.textAsHtml ? extractedS3Email.textAsHtml.match(regex) : []
         if (matches && matches.length > 0) {
           current_score += matches.length
         }
@@ -281,7 +294,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
       // current_score increases by 5 for each mention of a hint phrase
       lead_channel.channel_phrases.forEach((channel_phrase) => {
         let regex = new RegExp(channel_phrase, 'ig')
-        let matches = extractedS3Email.textAsHtml.match(regex) || []
+        let matches = extractedS3Email.textAsHtml ? extractedS3Email.textAsHtml.match(regex) : []
         if (matches && matches.length > 0) {
           current_score += (matches.length*5)
         }
@@ -308,7 +321,7 @@ module.exports.determineLeadChannel = function(extractedS3Email, participants) {
 
 // Determine which ad_id this email is referring to, and grab its `supervision_settings`
 // This is a dynamically changing value, so we must prioritize our estimate confidences
-module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Email, participants, proxy_email) {
+module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Email, participants, proxy_email, proxy_id) {
   const p = new Promise((res, rej) => {
     console.log(`------ DETERMINING WHICH AD_ID IS THE TARGET AD FOR THIS EMAIL ------`)
 
@@ -331,7 +344,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
     console.log(`------ GETTING 3 TYPES OF HINTS TO DETERMINE AD_ID ------`)
     const arrayPromises = [
       // KNOWN_AD_URLS
-      rdsAPI.fuzzysearch_ad_urls(proxy_email, extractedS3Email)
+      rdsAPI.fuzzysearch_ad_urls(proxy_id, extractedS3Email)
               .then((results) => {
                 return Promise.resolve(results)
               })
@@ -339,7 +352,7 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
                 return Promise.reject(err)
               }),
       // KNOWN_AD_ADDRESSES
-      rdsAPI.fuzzysearch_ad_addresses(proxy_email, extractedS3Email)
+      rdsAPI.fuzzysearch_ad_addresses(proxy_id, extractedS3Email)
               .then((results) => {
                 return Promise.resolve(results)
               })
@@ -459,6 +472,31 @@ module.exports.determineTargetAdAndSupervisionSettings = function(extractedS3Ema
         console.log(err)
         rej(err)
       })
+  })
+  return p
+}
+
+module.exports.determineLeadContactInfo = function(extractedS3Email, participants, proxy_email, proxy_id, leadChannel) {
+  const p = new Promise((res, rej) => {
+    LEAD_CHANNELS().lead_channels.forEach((lead_channel) => {
+      if (lead_channel.channel_name === leadChannel) {
+        LEAD_CHANNELS_EXTRACTOR[lead_channel.channel_name](extractedS3Email)
+          .then((data) => {
+            console.log(`------ EXTRACTING LEAD CONTACT INFO! ------`)
+            console.log(data)
+            res({
+              first_name: data.first_name,
+              last_name: data.last_name,
+              actual_email: data.actual_email,
+              actual_phone: data.actual_phone
+            })
+          }).catch((err) => {
+            console.log(`------ AN ERROR OCCURRED EXTRACTING LEAD CONTACT INFO! ------`)
+            console.log(err)
+            rej(err)
+          })
+      }
+    })
   })
   return p
 }
