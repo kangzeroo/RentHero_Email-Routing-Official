@@ -21,7 +21,7 @@ textAsHtml: '<p>---------- Forwarded message ---------<br/>From: Kaustubh Jaju [
   `
 }
 
-LEAD_CHANNELS_EXTRACTOR['kijiji'](S3_EMAIL)
+LEAD_CHANNELS_EXTRACTOR['zumper'](S3_EMAIL)
   .then((data) => {
     console.log('------ DATA')
     console.log(data)
