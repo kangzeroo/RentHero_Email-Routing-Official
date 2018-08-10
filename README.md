@@ -6,6 +6,8 @@
 ## TO UPDATE FOR PROD
 - copy over API_URLs, lead_channels_extractors.js and twilio_config.json to '/creds/production/'
 - change the error message email for dev and prod, stop spamming admin@renthero.com
+- deploy serverless
+- prod db stuff
 
 ## TO TEST FOR PROD
 - forward a kijiji post and see if the lead name and phone gets extracted
