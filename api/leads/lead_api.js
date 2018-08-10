@@ -6,7 +6,8 @@ const PARSE_EMAIL_API = require(`../../creds/${process.env.NODE_ENV}/API_URLS`).
 
 module.exports.handleIncomingLead = function(meta, participants, proxyEmail, agentEmail) {
   const p = new Promise((res, rej) => {
-    rdsAPI.save_lead_to_db(participants.from[0], proxyEmail, meta.leadChannel, meta.about_lead)
+      // checking is done in the backend
+      rdsAPI.save_lead_to_db(participants.from[0], proxyEmail, meta.leadChannel, meta.about_lead)
         .then((lead_id) => {
           return module.exports.saveLeadMessageToDB(meta.email_id, lead_id, participants.from[0], proxyEmail, agentEmail)
         })
