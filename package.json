@@ -10,6 +10,7 @@
     "mailcomposer": "4.0.2",
     "mailparser": "2.2.0",
     "moment": "2.22.2",
+    "striptags": "^3.1.1",
     "twilio": "3.19.1"
   },
   "devDependencies": {

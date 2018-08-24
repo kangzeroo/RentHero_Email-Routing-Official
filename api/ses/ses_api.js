@@ -1,6 +1,7 @@
 const axios = require('axios')
 const mailcomposer = require('mailcomposer')
 const path = require('path')
+const SES_ERROR_REPORT = require(`../../creds/${process.env.NODE_ENV}/ses_error_reporting`).ses_error
 const pathToAWSConfig = path.join(__dirname, '../..', 'creds', process.env.NODE_ENV, 'aws_config.json')
 const aws_config = require(pathToAWSConfig)
 const AWS = require('aws-sdk')
@@ -70,7 +71,7 @@ module.exports.sendErrorReportEmail = function(err, context) {
     const mail = mailcomposer({
       from: `no-reply${process.env.PROXY_EMAIL}`,
       replyTo: `no-reply${process.env.PROXY_EMAIL}`,
-      to: `admin@renthero.com`,
+      to: SES_ERROR_REPORT.email,
       subject: `Error in Proxy Router - See Cloudwatch RequestID: ${context.awsRequestId} and LogStreamName: ${context.logStreamName}`,
       text: JSON.stringify(err)
     })

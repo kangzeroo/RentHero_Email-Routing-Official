@@ -2,6 +2,7 @@ const rdsAPI = require('../rds/rds_api')
 const sesAPI = require('../ses/ses_api')
 const s3API = require('../s3/s3_api')
 const leadAPI = require('../leads/lead_api')
+const dynAPI = require('../dyn/dyn_api')
 const mailcomposer = require('mailcomposer')
 
 // reroute email from lead to agent
@@ -81,7 +82,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       // The rest
       params.subject = extractedS3Email.subject,
       params.text = extractedS3Email.text,
-      params.html = extractedS3Email.textAsHtml,
+      params.html = extractedS3Email.textAsHtml || extractedS3Email.html,
       params.attachments = extractedS3Email.attachments.map((attc) => {
         return {
           filename: attc.filename,
@@ -159,7 +160,7 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
             }),
         subject: extractedS3Email.subject,
         text: extractedS3Email.text,
-        html: extractedS3Email.textAsHtml,
+        html: extractedS3Email.textAsHtml || extractedS3Email.html,
         attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
           return {
             filename: attc.filename,
@@ -187,7 +188,7 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
 }
 
 // for agent --> lead email forwarding
-module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_settings, participants, proxyEmail) {
+module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_settings, participants, proxyEmail, sesEmail) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING AN AGENT --> LEAD EMAIL ------')
     console.log('extractedS3Email: ', extractedS3Email)
@@ -272,7 +273,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
                   }),
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
-              html: extractedS3Email.textAsHtml,
+              html: extractedS3Email.textAsHtml || extractedS3Email.html,
               attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
                 return {
                   filename: attc.filename,
@@ -285,6 +286,19 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
             console.log(params)
             console.log(mail)
             return sesAPI.sendForthEmails(mail)
+          })
+          .then((data) => {
+            console.log('==============> participants')
+            console.log(participants)
+            const original_participants = {
+              to: participants.to.map(a => loopFindPair(a, aliasPairs)),
+              from: participants.from.map(a => loopFindPair(a, aliasPairs)),
+              cc: participants.cc.map(a => loopFindPair(a, aliasPairs)),
+              inReplyTo: participants.inReplyTo.map(a => loopFindPair(a, aliasPairs)),
+              returnPath: participants.returnPath.map(a => loopFindPair(a, aliasPairs)),
+              messageID: participants.messageID
+            }
+            return dynAPI.saveKnowledgeHistory(sesEmail, meta, original_participants, proxyEmail)
           })
           .then((data) => {
             return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
@@ -300,7 +314,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
 }
 
 // for when a fallback agent responds to proxy, and proxy forwards it to the lead
-module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, participants, proxyEmail) {
+module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, participants, proxyEmail, sesEmail) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A FALLBACK AGENT --> LEAD EMAIL ------')
     console.log('extractedS3Email: ', extractedS3Email)
@@ -359,7 +373,7 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
                   }),
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
-              html: extractedS3Email.textAsHtml,
+              html: extractedS3Email.textAsHtml || extractedS3Email.html,
               attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
                 return {
                   filename: attc.filename,
@@ -372,6 +386,19 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
             console.log(params)
             console.log(mail)
             return sesAPI.sendForthEmails(mail)
+          })
+          .then((data) => {
+            console.log('==============> participants')
+            console.log(participants)
+            const original_participants = {
+              to: participants.to.map(a => loopFindPair(a, aliasPairs)),
+              from: participants.from.map(a => loopFindPair(a, aliasPairs)),
+              cc: participants.cc.map(a => loopFindPair(a, aliasPairs)),
+              inReplyTo: participants.inReplyTo.map(a => loopFindPair(a, aliasPairs)),
+              returnPath: participants.returnPath.map(a => loopFindPair(a, aliasPairs)),
+              messageID: participants.messageID
+            }
+            return dynAPI.saveKnowledgeHistory(sesEmail, meta, original_participants, proxyEmail)
           })
           .then((data) => {
             return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
