@@ -105,7 +105,7 @@ module.exports.fuzzysearch_ad_urls = function(proxy_id, extractedS3Email) {
     axios.post(`${RDS_MS}/fuzzysearch_ad_urls`, { proxy_id: proxy_id }, headers)
       .then((data) => {
         console.log(`------ Successful POST/fuzzysearch_ad_urls ------`)
-        const found_urls = Regexr.findURLS(extractedS3Email.textAsHtml)
+        const found_urls = Regexr.findURLS(extractedS3Email.textAsHtml || extractedS3Email.html)
         const real_urls = data.data.data
         const unique_matches = Fuzzy.searchURLs(found_urls, real_urls)
         console.log('found_urls: ', found_urls)
@@ -140,7 +140,7 @@ module.exports.fuzzysearch_ad_addresses = function(proxy_id, extractedS3Email) {
     axios.post(`${RDS_MS}/fuzzysearch_ad_addresses`, { proxy_id: proxy_id }, headers)
       .then((data) => {
         console.log(`------ Successful POST/fuzzysearch_ad_addresses ------`)
-        const found_addresses = Regexr.findAddresses(extractedS3Email.textAsHtml)
+        const found_addresses = Regexr.findAddresses(extractedS3Email.textAsHtml || extractedS3Email.html)
         const real_addresses = data.data.data
         const unique_matches = Fuzzy.searchAddresses(found_addresses, real_addresses)
         console.log('found_addresses: ', found_addresses)

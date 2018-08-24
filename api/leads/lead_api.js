@@ -50,7 +50,9 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
           MEDIUM: 'EMAIL',
           PROXY_ID: proxy_id || 'MISSING',
           PROXY_CONTACT: proxyEmail || 'MISSING',
-          MESSAGE: message || 'MISSING'
+          MESSAGE: message || 'MISSING',
+          SEEN: '1969-12-31T19:00:00-05:00',
+          HANDLED: false
         })
       })
       .then(() => {
@@ -99,7 +101,9 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
           MEDIUM: 'EMAIL',
           PROXY_ID: proxy_id,
           PROXY_CONTACT: proxyEmail,
-          MESSAGE: message
+          MESSAGE: message,
+          SEEN: '1969-12-31T19:00:00-05:00',
+          HANDLED: false
         })
       })
       .then(() => {
