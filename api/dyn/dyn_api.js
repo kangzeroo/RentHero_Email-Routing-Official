@@ -21,7 +21,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, pro
     }
   }
   const memories = []
-  participants.to.forEach((to) => {
+  participants.to.filter(to => to).forEach((to) => {
     memories.push({
       'USER_EMAIL': to,
       'HISTORY_ID': uuid.v4(),
@@ -33,7 +33,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, pro
       'PROXY_EMAIL': proxyEmail
     })
   })
-  participants.from.forEach((from) => {
+  participants.from.filter(from => from).forEach((from) => {
     memories.push({
       'USER_EMAIL': from,
       'HISTORY_ID': uuid.v4(),
@@ -45,7 +45,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, pro
       'PROXY_EMAIL': proxyEmail
     })
   })
-  participants.cc.forEach((cc) => {
+  participants.cc.filter(cc => cc).forEach((cc) => {
     memories.push({
       'USER_EMAIL': cc,
       'HISTORY_ID': uuid.v4(),
@@ -57,7 +57,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, pro
       'PROXY_EMAIL': proxyEmail
     })
   })
-  participants.inReplyTo.forEach((inReply) => {
+  participants.inReplyTo.filter(ir => ir).forEach((inReply) => {
     memories.push({
       'USER_EMAIL': inReply,
       'HISTORY_ID': uuid.v4(),
@@ -69,7 +69,7 @@ module.exports.saveKnowledgeHistory = function(sesEmail, meta, participants, pro
       'PROXY_EMAIL': proxyEmail
     })
   })
-  participants.returnPath.forEach((retP) => {
+  participants.returnPath.filter(rp => rp).forEach((retP) => {
     memories.push({
       'USER_EMAIL': retP,
       'HISTORY_ID': uuid.v4(),
