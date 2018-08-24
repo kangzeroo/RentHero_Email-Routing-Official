@@ -143,6 +143,7 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
     let direction = 'leadToAgent'
     let agent_emails = []
     let staff_agents = []
+    let operator_emails = []
     let ad_fallback_emails = []
     let proxy_fallback_emails = []
     rdsAPI.all_agent_emails(proxy_email)
@@ -152,6 +153,10 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
           })
           .then((x) => {
             staff_agents = x
+            return rdsAPI.all_operator_emails(proxy_email)
+          })
+          .then((x) => {
+            operator_emails = x
             return rdsAPI.all_ad_fallback_emails(proxy_email)
           })
           .then((x) => {
@@ -169,6 +174,13 @@ module.exports.determineMessageDirection = function(from_emails, proxy_email) {
             })
             from_emails.forEach((from) => {
               staff_agents.forEach((sa) => {
+                if (from === sa.email) {
+                  direction = 'agentToLead'
+                }
+              })
+            })
+            from_emails.forEach((from) => {
+              operator_emails.forEach((sa) => {
                 if (from === sa.email) {
                   direction = 'agentToLead'
                 }
