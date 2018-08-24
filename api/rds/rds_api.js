@@ -283,6 +283,30 @@ module.exports.all_staff_agent_emails = function(proxy_email) {
   return p
 }
 
+module.exports.all_operator_emails = function(proxy_email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  console.log(proxy_email)
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/all_operator_emails`, { proxy_email: proxy_email }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/all_operator_emails ------`)
+        console.log(data.data)
+        res(data.data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/all_operator_emails')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
+
 module.exports.all_ad_fallback_emails = function(proxy_email) {
   const headers = {
     headers: {
