@@ -237,6 +237,28 @@ module.exports.getDefaultFallbackAgentEmailForProxy = function(proxyEmail) {
   return p
 }
 
+module.exports.getDefaultAgentEmailForProxy = function(proxyEmail) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/get_intelligence_group_operators_for_proxy`, { proxy_email: proxyEmail, type: 'default', proxy_email_domain: process.env.PROXY_EMAIL }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/get_intelligence_group_operators_for_proxy ------`)
+        console.log(data.data)
+        res(data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/get_intelligence_group_operators_for_proxy')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
+
 module.exports.all_agent_emails = function(proxy_email) {
   const headers = {
     headers: {

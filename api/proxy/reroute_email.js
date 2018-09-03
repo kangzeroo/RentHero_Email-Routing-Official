@@ -109,6 +109,87 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
   return p
 }
 
+module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
+  const p = new Promise((res, rej) => {
+    console.log('------ REROUTING A LEAD --> INTELLIGENCE GROUP EMAIL ------')
+    console.log('meta: ', meta)
+    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('participants: ', participants)
+    console.log('proxyEmail: ', proxyEmail)
+    console.log('aliasPairs: ', aliasPairs)
+    let starterPoint
+    let fallback_agent_email
+    if (meta.fromKnownLandlord) {
+      // we can assume that this is a message forwarded to the proxy, and thus should reroute accordingly (find proof of FWD in Body and set to:address as the fwd.history[0].from)
+      console.log('------ THIS EMAIL WAS SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A FORWARDED INQUIRY. CHECK THE FWD BODY FOR A TO:ADDRESS TO AUTO-RESPOND TO ------')
+      console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
+      starterPoint = Promise.resolve()
+    } else {
+      // The actual email rerouting, when the message is not from a known landlord (we can find the to:address in the headers, rather than in the FWD body like in the above case)
+      console.log('------ THIS EMAIL WAS NOT SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A REGULAR INQUIRY ------')
+      console.log('------ NOTE THAT WE HANDLE THAT LOGIC ON THE RECEIVING AGENT EMAIL ------')
+      starterPoint = Promise.resolve()
+    }
+    console.log('------ GRABBING THE INTELLIGENCE GROUP EMAIL FOR THIS PROXY_EMAIL ------')
+    starterPoint.then(() => {
+      return rdsAPI.getDefaultAgentEmailForProxy(proxyEmail)
+    })
+    .then((data) => {
+      // data: agent (obj), operators (array of objs)
+      agent_email = data.agent.agent_email
+      operator_emails = data.operators.map((op) => return op.email)
+      console.log('------ FOUND THE INTELLIGENCE GROUP EMAIL FOR THIS AD_ID ------')
+      console.log('intelligence_group_email: ', agent_email)
+      // CC (will also duplicate the from:address, with a `TAG___`)
+      const leadEmailDuplicate = participants.from.map((from) => {
+                                  return loopFindPair(from, aliasPairs)
+                                })[0]
+      const params = {
+        // from: participants.from.map((from) => {
+        //         return loopFindPair(from, aliasPairs)
+        //       }),
+        from: proxyEmail,
+        replyTo: [proxyEmail].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : []),
+        to: [agent_email].concat(leadEmailDuplicate ? [`TAG___${leadEmailDuplicate}`] : [], operator_emails),
+            // [agent_email].concat(participants.to.filter((to) => {
+            //   return to !== proxyEmail
+            // }).map((to) => {
+            //   return loopFindPair(to, aliasPairs)
+            // })),
+        cc: participants.cc.map((cc) => {
+              return loopFindPair(cc, aliasPairs)
+            }),
+        subject: extractedS3Email.subject,
+        text: extractedS3Email.text,
+        html: extractedS3Email.textAsHtml || extractedS3Email.html,
+        attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+          return {
+            filename: attc.filename,
+            content: attc.content
+          }
+        }) : []
+      }
+      const mail = mailcomposer(params)
+      console.log('------ CREATED THE RAW LEAD->INTELLIGENCE GROUP EMAIL TO BE SENT OUT ------')
+      console.log(params)
+      console.log(mail)
+      return sesAPI.sendForthEmails(mail)
+    })
+    .then((data) => {
+      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email)
+    })
+    .then((data) => {
+      res(data)
+    })
+    .catch((err) => {
+      rej(err)
+    })
+  })
+  return p
+  })
+  return p
+}
+
 // lead to agent, could not find an ad_id, goes to this fallback
 module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, participants, proxyEmail, aliasPairs) {
   const p = new Promise((res, rej) => {
