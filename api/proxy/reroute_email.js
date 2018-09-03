@@ -186,8 +186,6 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
     })
   })
   return p
-  })
-  return p
 }
 
 // lead to agent, could not find an ad_id, goes to this fallback
