@@ -517,7 +517,7 @@ module.exports.determineLeadContactInfo = function(extractedS3Email, participant
     } else {
       console.log('Could not match a known channel!')
       res({
-        first_name: 'Unknown Name',
+        first_name: '',
         last_name: '',
         actual_email: '',
         actual_phone: ''

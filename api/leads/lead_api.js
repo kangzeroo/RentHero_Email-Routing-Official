@@ -67,6 +67,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
 
 module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxyEmail, agentEmail) {
   const p = new Promise((res, rej) => {
+    console.log(agentEmail)
     let convo
     let lead_id
     let proxy_id
@@ -82,18 +83,18 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
       })
       .then((pid) => {
         proxy_id = pid
-        return rdsAPI.get_agent_id(agentEmail)
+        return rdsAPI.get_agent_or_operator(agentEmail)
       })
-      .then((aid) => {
-        agent_id = aid
+      .then((data) => {
+        // agent_id = data.agent_id
         console.log('----------- DATA YO')
         console.log(convo)
         const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' ') : ''
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: meta.email_id,
-          SENDER_ID: agent_id,
+          SENDER_ID: data.agent_id || data.operator_id,
           SENDER_CONTACT: agentEmail,
-          SENDER_TYPE: 'AGENT_ID',
+          SENDER_TYPE: data.type,
           RECEIVER_ID: lead_id,
           RECEIVER_CONTACT: original_lead_email,
           RECEIVER_TYPE: 'LEAD_ID',
