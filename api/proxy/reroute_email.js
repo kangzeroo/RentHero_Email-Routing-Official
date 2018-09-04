@@ -118,7 +118,7 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
     console.log('proxyEmail: ', proxyEmail)
     console.log('aliasPairs: ', aliasPairs)
     let starterPoint
-    let fallback_agent_email
+    let agent_email, operator_emails
     if (meta.fromKnownLandlord) {
       // we can assume that this is a message forwarded to the proxy, and thus should reroute accordingly (find proof of FWD in Body and set to:address as the fwd.history[0].from)
       console.log('------ THIS EMAIL WAS SENT FROM A KNOWN LANDLORD STAFF EMAIL. WE WILL TREAT IT AS A FORWARDED INQUIRY. CHECK THE FWD BODY FOR A TO:ADDRESS TO AUTO-RESPOND TO ------')
@@ -131,13 +131,17 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
       starterPoint = Promise.resolve()
     }
     console.log('------ GRABBING THE INTELLIGENCE GROUP EMAIL FOR THIS PROXY_EMAIL ------')
+    console.log(`PROXY EMAIL: ${proxyEmail}`)
     starterPoint.then(() => {
       return rdsAPI.getDefaultAgentEmailForProxy(proxyEmail)
     })
     .then((data) => {
       // data: agent (obj), operators (array of objs)
-      agent_email = data.agent.agent_email
-      operator_emails = data.operators.map((op) => return op.email)
+      console.log('--- DATA: ', JSON.stringify(data))
+      agent_email = data.agent.email
+      operator_emails = data.operators.map(op => op.email)
+      console.log(`AGENT EMAIL: ${agent_email}`)
+      console.log(`OPERATOR EMAILS: ${JSON.stringify(operator_emails)}`)
       console.log('------ FOUND THE INTELLIGENCE GROUP EMAIL FOR THIS AD_ID ------')
       console.log('intelligence_group_email: ', agent_email)
       // CC (will also duplicate the from:address, with a `TAG___`)
@@ -266,6 +270,8 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
   return p
 }
 
+ // jimmehguoo.5721470c-6a41-4e1d-a044-d633a3a7b6d9@renthero.tech
+
 // for agent --> lead email forwarding
 module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_settings, participants, proxyEmail, sesEmail) {
   const p = new Promise((res, rej) => {
@@ -380,6 +386,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
             return dynAPI.saveKnowledgeHistory(sesEmail, meta, original_participants, proxyEmail)
           })
           .then((data) => {
+            console.log('AGENTEMAIL=====>', agentEmail)
             return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
           })
           .then((data) => {

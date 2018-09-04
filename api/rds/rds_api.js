@@ -460,3 +460,25 @@ module.exports.get_agent_id = function(agent_email) {
   })
   return p
 }
+
+module.exports.get_agent_or_operator = function(email) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/get_agent_or_operator`, { email: email, }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/get_agent_or_operator ------`)
+        console.log(data.data)
+        res(data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/get_agent_or_operator')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
