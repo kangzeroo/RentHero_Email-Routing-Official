@@ -301,7 +301,8 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
     console.log('alias_emails: ', alias_emails)
     // participants.to has [heffe@renthero.ai, TAG___leadXYZ@renthero.cc]
     const receipient = participants.to.filter((to) => {
-      return to.indexOf('TAG___') > -1 && to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+      // return to.indexOf('TAG___') > -1 && to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1
+      return to.indexOf('TAG___') > -1 && (to.toLowerCase().indexOf(process.env.ALIAS_EMAIL) > -1 || to.toLowerCase().indexOf(process.env.AGENT_EMAIL) > -1)
     })[0]
     console.log('receipient')
     console.log(receipient)
