@@ -9,7 +9,7 @@ module.exports.handleIncomingLead = function(meta, participants, proxyEmail, age
       // checking is done in the backend
       rdsAPI.save_lead_to_db(participants.from[0], proxyEmail, meta.leadChannel, meta.about_lead)
         .then((lead_id) => {
-          return module.exports.saveLeadMessageToDB(meta.email_id, lead_id, participants.from[0], proxyEmail, agentEmail)
+          return module.exports.saveLeadMessageToDB(meta.email_id, lead_id, participants.from[0], proxyEmail, agentEmail, meta.leadChannel)
         })
         .then(() => {
           res()
@@ -21,12 +21,12 @@ module.exports.handleIncomingLead = function(meta, participants, proxyEmail, age
   return p
 }
 
-module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, proxyEmail, agentEmail) {
+module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, proxyEmail, agentEmail, leadChannel) {
   const p = new Promise((res, rej) => {
     let convo
     let proxy_id
     let agent_id
-    module.exports.parse_email_convo(`proxy_emails/${email_id}`)
+    module.exports.parse_email_convo(`proxy_emails/${email_id}`, leadChannel)
       .then((clean_convo) => {
         convo = clean_convo
         return rdsAPI.get_proxy_id(proxyEmail)
@@ -37,7 +37,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
       })
       .then((aid) => {
         agent_id = aid
-        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' ') : ''
+        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: email_id || 'MISSING',
           SENDER_ID: lead_id || 'MISSING',
@@ -48,6 +48,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
           RECEIVER_TYPE: 'AGENT_ID',
           TIMESTAMP: moment().toISOString(),
           MEDIUM: 'EMAIL',
+          URL: `https://s3.amazonaws.com/${process.env.S3_BUCKET}/proxy_emails/${email_id}`,
           PROXY_ID: proxy_id || 'MISSING',
           PROXY_CONTACT: proxyEmail || 'MISSING',
           MESSAGE: message || 'MISSING',
@@ -75,7 +76,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
     rdsAPI.get_lead_id_from_db(original_lead_email, proxyEmail)
       .then((found_lead_id) => {
         lead_id = found_lead_id
-        return module.exports.parse_email_convo(`proxy_emails/${meta.email_id}`)
+        return module.exports.parse_email_convo(`proxy_emails/${meta.email_id}`, meta.leadChannel)
       })
       .then((clean_convo) => {
         convo = clean_convo
@@ -89,7 +90,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
         // agent_id = data.agent_id
         console.log('----------- DATA YO')
         console.log(convo)
-        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' ') : ''
+        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: meta.email_id,
           SENDER_ID: data.agent_id || data.operator_id,
@@ -100,6 +101,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
           RECEIVER_TYPE: 'LEAD_ID',
           TIMESTAMP: moment().toISOString(),
           MEDIUM: 'EMAIL',
+          URL: `https://s3.amazonaws.com/${process.env.S3_BUCKET}/proxy_emails/${meta.email_id}`,
           PROXY_ID: proxy_id,
           PROXY_CONTACT: proxyEmail,
           MESSAGE: message,
@@ -117,14 +119,14 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
   return p
 }
 
-module.exports.parse_email_convo = function(email_location) {
+module.exports.parse_email_convo = function(email_location, leadChannel) {
   const headers = {
     headers: {
       Authorization: `Bearer xxxx`
     }
   }
   const p = new Promise((res, rej) => {
-    axios.post(`${PARSE_EMAIL_API}`, { message_location: email_location }, headers)
+    axios.post(`${PARSE_EMAIL_API}`, { message_location: email_location, lead_channel: leadChannel.channel_name }, headers)
       .then((data) => {
         console.log(`------ Successful POST/${PARSE_EMAIL_API} ------`)
         console.log(data.data)
