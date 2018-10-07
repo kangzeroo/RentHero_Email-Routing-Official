@@ -41,9 +41,12 @@ module.exports.send_forwarding_request_email = function(s3_email_location, proxy
             text: extractedS3Email.text,
             html: extractedS3Email.textAsHtml,
             attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+              const name = attc.filename.split('/')
               return {
-                filename: attc.filename,
-                content: attc.content
+                filename: name[name.length - 1].replace('%', ' '),
+                content: attc.content,
+                location: attc.filename,
+                path: attc.path
               }
             }) : []
           }

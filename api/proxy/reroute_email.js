@@ -11,6 +11,7 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
   const p = new Promise((res, rej) => {
     console.log('meta: ', meta)
     console.log('extractedS3Email: ', extractedS3Email)
+
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
     console.log('aliasPairs: ', aliasPairs)
@@ -46,9 +47,13 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       console.log('------ GRABBING THE APPROPRIATE AGENT EMAIL FOR THIS AD_ID ------')
       return rdsAPI.get_agent_for_ad(meta.targetAd)
     })
-    .then((email) => {
+    .then((data) => {
       console.log('------ FOUND THE APPROPRIATE AGENT EMAIL ------')
-      agent_email = email
+      if (data && data.email) {
+        agent_email = data.email
+      } else {
+        agent_email = 'support.d15e264b-28cb-40e0-a166-d8ce1ca607e9@renthero.tech'
+      }
       console.log(agent_email)
       const params = {}
       // --> LEAD EMAIL (SENDER)
@@ -84,9 +89,11 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       params.text = extractedS3Email.text,
       params.html = extractedS3Email.textAsHtml || extractedS3Email.html,
       params.attachments = extractedS3Email.attachments.map((attc) => {
+        const name = attc.filename.split('/')
         return {
-          filename: attc.filename,
-          content: attc.content
+          filename: name[name.length - 1].replace('%', ' '),
+          content: attc.content,
+          location: attc.filename
         }
       })
       const mail = mailcomposer(params)
@@ -113,7 +120,7 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A LEAD --> INTELLIGENCE GROUP EMAIL ------')
     console.log('meta: ', meta)
-    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('extractedS3Email: ', JSON.stringify(extractedS3Email))
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
     console.log('aliasPairs: ', aliasPairs)
@@ -167,9 +174,11 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
         text: extractedS3Email.text,
         html: extractedS3Email.textAsHtml || extractedS3Email.html,
         attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+          const name = attc.filename.split('/')
           return {
-            filename: attc.filename,
-            content: attc.content
+            filename: name[name.length - 1].replace('%', ' '),
+            content: attc.content,
+            location: attc.filename
           }
         }) : []
       }
@@ -197,7 +206,7 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A LEAD --> FALLBACK AGENT EMAIL ------')
     console.log('meta: ', meta)
-    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('extractedS3Email: ', JSON.stringify(extractedS3Email))
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
     console.log('aliasPairs: ', aliasPairs)
@@ -245,9 +254,11 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
         text: extractedS3Email.text,
         html: extractedS3Email.textAsHtml || extractedS3Email.html,
         attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+          const name = attc.filename.split('/')
           return {
-            filename: attc.filename,
-            content: attc.content
+            filename: name[name.length - 1].replace('%', ' '),
+            content: attc.content,
+            location: attc.filename
           }
         }) : []
       }
@@ -276,9 +287,10 @@ module.exports.sendOutFallbackProxyEmail = function(meta, extractedS3Email, part
 module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_settings, participants, proxyEmail, sesEmail) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING AN AGENT --> LEAD EMAIL ------')
-    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('extractedS3Email: ', JSON.stringify(extractedS3Email))
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
+    console.log('SESEMAIL: ', sesEmail)
     const agentEmail = participants.from[0]
     const alias_emails = []
     participants.to.filter((to) => {
@@ -330,6 +342,14 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
     console.log('------ GRABBING THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
     console.log('Alias Emails: ', alias_emails)
     let aliasPairs
+    let attachments = extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+      const name = attc.filename.split('/')
+      return {
+        filename: name[name.length - 1].replace('%', ' '),
+        content: attc.content,
+        location: attc.filename
+      }
+    }) : []
     rdsAPI.grab_original_emails(alias_emails)
           .then((apairs) => {
             aliasPairs = apairs
@@ -360,12 +380,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml || extractedS3Email.html,
-              attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
-                return {
-                  filename: attc.filename,
-                  content: attc.content
-                }
-              }) : []
+              attachments: attachments
             }
             const mail = mailcomposer(params)
             console.log('------ CREATED THE RAW AGENT->LEAD EMAIL TO BE SENT OUT ------')
@@ -388,7 +403,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
           })
           .then((data) => {
             console.log('AGENTEMAIL=====>', agentEmail)
-            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
+            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail, attachments.map((item) => { return { filename: item.filename, location: item.location }}))
           })
           .then((data) => {
             res(data)
@@ -404,7 +419,7 @@ module.exports.sendOutLeadEmail = function(meta, extractedS3Email, supervision_s
 module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, participants, proxyEmail, sesEmail) {
   const p = new Promise((res, rej) => {
     console.log('------ REROUTING A FALLBACK AGENT --> LEAD EMAIL ------')
-    console.log('extractedS3Email: ', extractedS3Email)
+    console.log('extractedS3Email: ', JSON.stringify(extractedS3Email))
     console.log('participants: ', participants)
     console.log('proxyEmail: ', proxyEmail)
     const agentEmail = participants.from[0]
@@ -445,6 +460,14 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
     console.log('------ GRABBING THE ORIGINAL EMAILS FOR THESE ALIAS EMAILS ------')
     console.log('Alias Emails: ', alias_emails)
     let aliasPairs
+    let attachments = extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
+      const name = attc.filename.split('/')
+      return {
+        filename: name[name.length - 1].replace('%', ' '),
+        content: attc.content,
+        location: attc.filename
+      }
+    }) : []
     rdsAPI.grab_original_emails(alias_emails)
           .then((apairs) => {
             aliasPairs = apairs
@@ -461,12 +484,7 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
               subject: extractedS3Email.subject,
               text: extractedS3Email.text,
               html: extractedS3Email.textAsHtml || extractedS3Email.html,
-              attachments: extractedS3Email.attachments ? extractedS3Email.attachments.map((attc) => {
-                return {
-                  filename: attc.filename,
-                  content: attc.content
-                }
-              }) : []
+              attachments: attachments
             }
             const mail = mailcomposer(params)
             console.log('------ CREATED THE RAW FALLBACK AGENT->LEAD EMAIL TO BE SENT OUT ------')
@@ -488,7 +506,7 @@ module.exports.sendOutFallbackLeadEmail = function(meta, extractedS3Email, parti
             return dynAPI.saveKnowledgeHistory(sesEmail, meta, original_participants, proxyEmail)
           })
           .then((data) => {
-            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail)
+            return leadAPI.saveAgentResponseToDB(meta, loopFindPair(lead_email, aliasPairs), proxyEmail, agentEmail, attachments.map((item) => { return { filename: item.filename, location: item.location }}))
           })
           .then((data) => {
             res(data)
