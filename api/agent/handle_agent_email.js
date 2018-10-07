@@ -13,9 +13,11 @@ module.exports.handleAgentEmail = function(agent_email, proxy_email, lead_email,
       text: `Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and generated this response. Everything is good!`,
       html: `<p>Hello ${lead_email}, this is the RentHero AI (${agent_email}) responding behind the proxy ${proxy_email}. We got your message and generated this response. Everything is good!</p>`,
       attachments: extractedS3Email.attachments.map((attc) => {
+        const name = attc.filename.split('/')
         return {
-          filename: attc.filename,
-          content: attc.content
+          filename: name[name.length - 1].replace('%', ' '),
+          content: attc.content,
+          location: attc.filename
         }
       })
     }

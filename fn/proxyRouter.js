@@ -197,6 +197,7 @@ module.exports = function(event, context, callback){
               console.log('------ HANDLING A LEAD --> AGENT EMAIL ------')
               return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
                           .then((s3Email) => {
+                            console.log('s3Email: ', s3Email)
                             return extractionAPI.extractEmail(s3Email)
                           })
                           .then((extrS3Email) => {
@@ -337,6 +338,7 @@ module.exports = function(event, context, callback){
               let extractedS3Email
               return s3API.grabEmail(process.env.S3_BUCKET, `proxy_emails/${sesEmail.messageId}`)
                           .then((s3Email) => {
+                            console.log('s3Email: ', s3Email)
                             return extractionAPI.extractEmail(s3Email)
                           })
                           .then((s3Email) => {

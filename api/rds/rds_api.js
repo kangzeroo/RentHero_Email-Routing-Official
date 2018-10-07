@@ -199,7 +199,7 @@ module.exports.get_agent_for_ad = function(ad_id) {
       .then((data) => {
         console.log(`------ Successful POST/get_agent_for_ad ------`)
         console.log(data.data)
-        res(data.data.data.email)
+        res(data.data.data)
       })
       .catch((err) => {
         console.log('------> Failed POST/get_agent_for_ad')

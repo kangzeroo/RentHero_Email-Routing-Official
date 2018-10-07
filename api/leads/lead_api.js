@@ -21,7 +21,7 @@ module.exports.handleIncomingLead = function(meta, participants, proxyEmail, age
   return p
 }
 
-module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, proxyEmail, agentEmail, leadChannel) {
+module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, proxyEmail, agentEmail, leadChannel, attachments) {
   const p = new Promise((res, rej) => {
     let convo
     let proxy_id
@@ -53,7 +53,8 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
           PROXY_CONTACT: proxyEmail || 'MISSING',
           MESSAGE: message || 'MISSING',
           SEEN: '1969-12-31T19:00:00-05:00',
-          HANDLED: false
+          HANDLED: false,
+          ATTACHMENTS: attachments
         })
       })
       .then(() => {
@@ -66,7 +67,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
   return p
 }
 
-module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxyEmail, agentEmail) {
+module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxyEmail, agentEmail, attachments) {
   const p = new Promise((res, rej) => {
     console.log(agentEmail)
     let convo
@@ -106,7 +107,8 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
           PROXY_CONTACT: proxyEmail,
           MESSAGE: message,
           SEEN: '1969-12-31T19:00:00-05:00',
-          HANDLED: false
+          HANDLED: false,
+          ATTACHMENTS: attachments
         })
       })
       .then(() => {
