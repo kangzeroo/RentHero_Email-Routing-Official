@@ -72,6 +72,7 @@ module.exports = function(event, context, callback){
           return extractionAPI.determineWhatTypeOfAgent(agent_email, proxy_email)
         })
         .then((typeOfAgent) => {
+          console.log('typeOfAgent: ', typeOfAgent)
           if (typeOfAgent === 'agent') {
             return agentEmail.handleAgentEmail(agent_email, proxy_email, lead_email, participants, extractedS3Email)
           } else if (typeOfAgent === 'ad_fallback') {

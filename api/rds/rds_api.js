@@ -384,7 +384,7 @@ module.exports.save_lead_to_db = function(channel_email, proxy_email, channel, a
       .then((data) => {
         console.log(`------ Successful POST/save_lead_to_db ------`)
         console.log(data.data)
-        res(data.data.lead_id)
+        res(data.data)
       })
       .catch((err) => {
         console.log('------> Failed POST/save_lead_to_db')
