@@ -201,6 +201,7 @@ module.exports = function(event, context, callback){
                             return extractionAPI.extractEmail(s3Email)
                           })
                           .then((extrS3Email) => {
+                              console.log('extrS3Email: ', extrS3Email)
                               extractedS3Email = extrS3Email
                               return rdsAPI.get_proxy_id(proxyEmail)
                           })

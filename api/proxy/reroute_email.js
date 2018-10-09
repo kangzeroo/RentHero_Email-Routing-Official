@@ -104,7 +104,8 @@ module.exports.sendOutAgentEmail = function(meta, extractedS3Email, participants
       return sesAPI.sendForthEmails(mail)
     })
     .then((data) => {
-      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email)
+      console.log('extractedS3Email: ', extractedS3Email)
+      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email, extractedS3Email.attachments)
     })
     .then((data) => {
       res(data)
@@ -189,7 +190,7 @@ module.exports.selectIntelligenceGroupEmailsAndSendOut = function(meta, extracte
       return sesAPI.sendForthEmails(mail)
     })
     .then((data) => {
-      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email)
+      return leadAPI.handleIncomingLead(meta, participants, proxyEmail, agent_email, extractedS3Email.attachments)
     })
     .then((data) => {
       res(data)

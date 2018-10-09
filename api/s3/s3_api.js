@@ -26,3 +26,65 @@ module.exports.grabEmail = function(bucket, key){
   })
   return p
 }
+
+
+module.exports.batchUploadFilesToS3 = function(files, convo_id) {
+  const p = new Promise((res, rej) => {
+    if (files && files.length > 0) {
+      const S3 = new AWS.S3()
+
+      const arrayOfPromises = files.map((file) => {
+        return module.exports.uploadFileToS3(file, convo_id)
+      })
+
+      Promise.all(arrayOfPromises)
+        .then((data) => {
+          console.log(data)
+
+          res(data)
+        })
+        .catch((err) => {
+          console.log(err)
+          rej(err)
+        })
+    } else {
+      res(null)
+    }
+  })
+  return p
+}
+
+
+// S3 upload function
+// the prefixes are very important for S3 folder structure
+// we group S3 assets from folders such as so:
+// corporation > building > main_photos > img.png
+// corporation > corporation_assets > thumbnail > img.png
+module.exports.uploadFileToS3 = function(file, convo_id) {
+	const p = new Promise((res, rej) => {
+		const S3 = new AWS.S3()
+		console.log(file)
+
+		// S3 Folder-File syntax: corporation_id/building_id/asset_type/file_name.png
+    // const key = convo_id + file.name
+    const key = convo_id + '/' + file.filename
+
+		S3.upload({
+				Bucket: 'renthero-email-attachments',
+		    Key: key,
+		    Body: file.content,
+		    ACL: 'public-read'
+		}, (err, S3Object) => {
+		    if (err) {
+					console.log(err)
+	      	const msg = `There was an error uploading your file: ${err.message}`
+	      	// console.log(msg)
+	      	rej(msg)
+	      	return
+		    }
+				const msg = `Successfully uploaded original file ${file.filename}`
+				res(Object.assign({}, S3Object, { filename: file.filename, }))
+		})
+	})
+	return p
+}

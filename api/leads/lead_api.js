@@ -1,15 +1,29 @@
 const moment = require('moment')
 const rdsAPI = require('../rds/rds_api')
 const dynAPI = require('../dyn/dyn_api')
+const s3API = require('../s3/s3_api')
 const axios = require('axios')
 const PARSE_EMAIL_API = require(`../../creds/${process.env.NODE_ENV}/API_URLS`).PARSE_EMAIL_API
 
-module.exports.handleIncomingLead = function(meta, participants, proxyEmail, agentEmail) {
+module.exports.handleIncomingLead = function(meta, participants, proxyEmail, agentEmail, attachments) {
+  console.log('====handleIncomingLead')
   const p = new Promise((res, rej) => {
       // checking is done in the backend
       rdsAPI.save_lead_to_db(participants.from[0], proxyEmail, meta.leadChannel, meta.about_lead)
-        .then((lead_id) => {
-          return module.exports.saveLeadMessageToDB(meta.email_id, lead_id, participants.from[0], proxyEmail, agentEmail, meta.leadChannel)
+        .then((data) => {
+          console.log(data)
+          let convo_id = data.convo_id
+            console.log('CONVO ID: ', convo_id)
+          if (attachments) {
+            console.log('ATTACHMENTS EXIST: ', attachments)
+            return s3API.batchUploadFilesToS3(attachments, convo_id)
+                    .then((fileData) => {
+                      console.log('fileData: ', fileData)
+                      return module.exports.saveLeadMessageToDB(meta.email_id, data.lead_id, participants.from[0], proxyEmail, agentEmail, meta.leadChannel, fileData)
+                    })
+          } else {
+            return module.exports.saveLeadMessageToDB(meta.email_id, data.lead_id, participants.from[0], proxyEmail, agentEmail, meta.leadChannel)
+          }
         })
         .then(() => {
           res()
