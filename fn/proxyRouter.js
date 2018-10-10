@@ -331,6 +331,7 @@ module.exports = function(event, context, callback){
                             callback(null, response)
                           })
                           .catch((err) => {
+                            console.log('ERROR: ' ,err, context)
                             reportIssue(callback, err, context)
                           })
             } else if (direction === 'fallbackAgentToLead') {

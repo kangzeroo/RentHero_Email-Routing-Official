@@ -68,7 +68,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
           MESSAGE: message || 'MISSING',
           SEEN: '1969-12-31T19:00:00-05:00',
           HANDLED: false,
-          ATTACHMENTS: attachments
+          ATTACHMENTS: attachments && attachments.length > 0 ? attachments : 'NONE'
         })
       })
       .then(() => {
@@ -106,6 +106,24 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
         console.log('----------- DATA YO')
         console.log(convo)
         const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
+        console.log({
+          SES_MESSAGE_ID: meta.email_id,
+          SENDER_ID: data.agent_id || data.operator_id,
+          SENDER_CONTACT: agentEmail,
+          SENDER_TYPE: data.type,
+          RECEIVER_ID: lead_id,
+          RECEIVER_CONTACT: original_lead_email,
+          RECEIVER_TYPE: 'LEAD_ID',
+          TIMESTAMP: moment().toISOString(),
+          MEDIUM: 'EMAIL',
+          URL: `https://s3.amazonaws.com/${process.env.S3_BUCKET}/proxy_emails/${meta.email_id}`,
+          PROXY_ID: proxy_id,
+          PROXY_CONTACT: proxyEmail,
+          MESSAGE: message,
+          SEEN: '1969-12-31T19:00:00-05:00',
+          HANDLED: false,
+          ATTACHMENTS: attachments && attachments.length > 0 ? attachments : 'NONE'
+        })
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: meta.email_id,
           SENDER_ID: data.agent_id || data.operator_id,
@@ -122,7 +140,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
           MESSAGE: message,
           SEEN: '1969-12-31T19:00:00-05:00',
           HANDLED: false,
-          ATTACHMENTS: attachments
+          ATTACHMENTS: attachments && attachments.length > 0 ? attachments : 'NONE'
         })
       })
       .then(() => {
