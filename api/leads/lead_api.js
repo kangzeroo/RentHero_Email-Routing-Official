@@ -104,7 +104,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
       .then((data) => {
         // agent_id = data.agent_id
         console.log('----------- DATA YO')
-        console.log(convo)
+        console.log(JSON.stringify(convo))
         const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
         console.log({
           SES_MESSAGE_ID: meta.email_id,
