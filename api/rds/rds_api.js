@@ -482,3 +482,25 @@ module.exports.get_agent_or_operator = function(email) {
   })
   return p
 }
+
+module.exports.update_lead_to_proxy_messages = function(lead_id, proxy_id, message) {
+  const headers = {
+    headers: {
+      Authorization: `Bearer xxxx`
+    }
+  }
+  const p = new Promise((res, rej) => {
+    axios.post(`${RDS_MS}/update_lead_to_proxy_messages`, { lead_id, proxy_id, message, }, headers)
+      .then((data) => {
+        console.log(`------ Successful POST/update_lead_to_proxy_messages ------`)
+        console.log(data.data)
+        res(data.data)
+      })
+      .catch((err) => {
+        console.log('------> Failed POST/update_lead_to_proxy_messages')
+        console.log(err)
+        rej(err)
+      })
+  })
+  return p
+}
