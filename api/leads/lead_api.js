@@ -40,6 +40,7 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
     let convo
     let proxy_id
     let agent_id
+    let message
     module.exports.parse_email_convo(`proxy_emails/${email_id}`, leadChannel)
       .then((clean_convo) => {
         convo = clean_convo
@@ -51,7 +52,10 @@ module.exports.saveLeadMessageToDB = function(email_id, lead_id, lead_email, pro
       })
       .then((aid) => {
         agent_id = aid
-        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
+        message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
+        return rdsAPI.update_lead_to_proxy_messages(lead_id, proxy_id, message)
+      })
+      .then(() => {
         return dynAPI.save_cleaned_convo({
           SES_MESSAGE_ID: email_id || 'MISSING',
           SENDER_ID: lead_id || 'MISSING',
@@ -87,6 +91,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
     let convo
     let lead_id
     let proxy_id
+    let message
     let agent_id
     rdsAPI.get_lead_id_from_db(original_lead_email, proxyEmail)
       .then((found_lead_id) => {
@@ -103,9 +108,7 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
       })
       .then((data) => {
         // agent_id = data.agent_id
-        console.log('----------- DATA YO')
-        console.log(convo)
-        const message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
+        message = convo.data[0] && convo.data[0].message && convo.data[0].message.length > 0 ? convo.data[0].message.join(' \n\r ') : ''
         console.log({
           SES_MESSAGE_ID: meta.email_id,
           SENDER_ID: data.agent_id || data.operator_id,
@@ -142,6 +145,9 @@ module.exports.saveAgentResponseToDB = function(meta, original_lead_email, proxy
           HANDLED: false,
           ATTACHMENTS: attachments && attachments.length > 0 ? attachments : 'NONE'
         })
+      })
+      .then(() => {
+        return rdsAPI.update_lead_to_proxy_messages(lead_id, proxy_id, message)
       })
       .then(() => {
         res()
